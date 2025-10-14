@@ -28,28 +28,46 @@ MAX_COMMANDS = 3
 # Create the game grid
 game_grid = Grid(GRID_DATA, ROBOT_START, DIRECTION, MAX_COMMANDS)
 
-class DelayedBot(Bot):
-    """Bot class with delay between actions for visualization"""
+class AnimatedBot(Bot):
+    """Bot class that captures each frame for animation"""
     
-    def __init__(self, grid, delay=0.5):
+    def __init__(self, grid):
         super().__init__(grid)
-        self.delay = delay
+        self.frames = []  # Store grid state after each action
         self.action_log = []
+        self.capture_frame("Initial state")
+    
+    def capture_frame(self, action_description):
+        """Capture current grid state as a frame"""
+        self.frames.append({
+            'grid_state': str(self),
+            'action': action_description,
+            'position': (self.i, self.j),
+            'direction': self.direction,
+            'alive': self.alive,
+            'win_state': self.win_state
+        })
+        self.action_log.append(action_description)
     
     def move_forward(self):
-        super().move_forward()
-        self.action_log.append(f"Move forward (direction: {['up', 'left', 'down', 'right'][self.direction]})")
-        time.sleep(self.delay)
+        try:
+            super().move_forward()
+        except WinInterruption:
+            # Bot reached the finish line - capture this winning state
+            direction_name = ['up', 'left', 'down', 'right'][self.direction]
+            self.capture_frame(f"Move forward ({direction_name}) - REACHED FINISH!")
+            raise  # Re-raise the exception after capturing the frame
+        
+        direction_name = ['up', 'left', 'down', 'right'][self.direction]
+        self.capture_frame(f"Move forward ({direction_name})")
     
     def turn_right(self):
         super().turn_right()
-        self.action_log.append("Turn right")
-        time.sleep(self.delay)
+        self.capture_frame("Turn right")
     
     def turn_left(self):
         super().turn_left()
-        self.action_log.append("Turn left")
-        time.sleep(self.delay)
+        self.capture_frame("Turn left")
 
 def is_code_safe(code):
     """Basic security check for code safety"""
@@ -94,11 +112,8 @@ def execute_code():
                 'error': 'Code contains potentially unsafe operations'
             })
         
-        # Get delay parameter (default 0.5 seconds)
-        delay = data.get('delay', 0.5)
-        
         # Create a new bot for this execution
-        bot = DelayedBot(game_grid, delay)
+        bot = AnimatedBot(game_grid)
         
         # Clean the code (remove imports except math)
         lines = code.split('\n')
@@ -139,7 +154,8 @@ def execute_code():
                 'command_count': command_count,
                 'win_state': bot.win_state,
                 'alive': bot.alive,
-                'action_log': bot.action_log
+                'action_log': bot.action_log,
+                'frames': bot.frames  # Return all frames for animation
             })
             
         except WinInterruption:
@@ -159,7 +175,8 @@ def execute_code():
                 'command_count': command_count,
                 'win_state': True,
                 'alive': bot.alive,
-                'action_log': bot.action_log
+                'action_log': bot.action_log,
+                'frames': bot.frames  # Return all frames for animation
             })
             
         except Exception as e:
@@ -172,68 +189,6 @@ def execute_code():
         return jsonify({
             'success': False,
             'error': f'Server error: {str(e)}'
-        })
-
-@app.route('/execute-step', methods=['POST'])
-def execute_step():
-    """Execute one step of bot code for step-by-step visualization"""
-    try:
-        data = request.get_json()
-        if not data or 'code' not in data:
-            return jsonify({'success': False, 'error': 'No code provided'})
-        
-        code = data['code']
-        step = data.get('step', 0)
-        
-        # Security check
-        if not is_code_safe(code):
-            return jsonify({
-                'success': False, 
-                'error': 'Code contains potentially unsafe operations'
-            })
-        
-        # Create bot and execute one command
-        bot = DelayedBot(game_grid, 0.1)  # Short delay for step execution
-        
-        # Parse code to get individual commands
-        lines = code.split('\n')
-        clean_lines = []
-        for line in lines:
-            if 'import' in line and 'math' not in line:
-                continue
-            clean_lines.append(line)
-        
-        # Execute one command at a time
-        commands_executed = 0
-        for line in clean_lines:
-            if commands_executed >= step + 1:
-                break
-                
-            line = line.strip()
-            if 'bot.move_forward()' in line and (line.find('#') == -1 or line.find('#') > line.find('bot.move_forward()')):
-                bot.move_forward()
-                commands_executed += 1
-            elif 'bot.turn_left()' in line and (line.find('#') == -1 or line.find('#') > line.find('bot.turn_left()')):
-                bot.turn_left()
-                commands_executed += 1
-            elif 'bot.turn_right()' in line and (line.find('#') == -1 or line.find('#') > line.find('bot.turn_right()')):
-                bot.turn_right()
-                commands_executed += 1
-        
-        return jsonify({
-            'success': True,
-            'grid_state': str(bot),
-            'step': step,
-            'total_steps': len([l for l in clean_lines if any(cmd in l for cmd in ['bot.move_forward()', 'bot.turn_left()', 'bot.turn_right()'])]),
-            'win_state': bot.win_state,
-            'alive': bot.alive,
-            'last_action': bot.action_log[-1] if bot.action_log else None
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Step execution error: {str(e)}'
         })
 
 @app.route('/grid')

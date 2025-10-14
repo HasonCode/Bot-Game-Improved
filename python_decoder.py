@@ -104,7 +104,7 @@ class Bot:
     def __str__(self):
         strong = ""
         emojis = ["⬜ ","⬛ ","🟦 ","🟫 "]
-        bot_emoji = ["⬆️  ","⬅️  ","⬇️  ","➡️  "]
+        bot_emoji = ["⬆️ ","⬅️ ","⬇️ ","➡️ "]
         for i in range(self.grid.rows):
             for j in range(self.grid.cols):
                 if i == self.i and j == self.j:

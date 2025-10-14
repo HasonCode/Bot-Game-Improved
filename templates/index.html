@@ -106,6 +106,46 @@ while True:
             }
         }
 
+        async function playAnimation(frames, delay) {
+            /**
+             * Play frames sequentially with delay between each frame
+             */
+            for (let i = 0; i < frames.length; i++) {
+                const frame = frames[i];
+                
+                // Update grid display
+                document.getElementById('grid-display').textContent = frame.grid_state;
+                
+                // Show current action
+                if (i > 0) {  // Skip initial state
+                    addOutput(`${i}. ${frame.action}`);
+                }
+                
+                // Update bot status during animation
+                if (frame.win_state) {
+                    document.getElementById('bot-status').textContent = 'Bot Status: 🏆 VICTORY!';
+                    document.getElementById('bot-status').className = 'success';
+                } else if (!frame.alive) {
+                    document.getElementById('bot-status').textContent = 'Bot Status: 💀 DEAD';
+                    document.getElementById('bot-status').className = 'error';
+                } else {
+                    document.getElementById('bot-status').textContent = 'Bot Status: 🏃 RUNNING';
+                    document.getElementById('bot-status').className = '';
+                }
+                
+                // Wait for the delay before showing next frame (but always show the last frame)
+                if (i < frames.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, delay * 1000));
+                } else {
+                    // Ensure final frame is visible for at least a moment
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            // Return the final frame for status updates
+            return frames[frames.length - 1];
+        }
+
         async function executeCode() {
             if (isLoading) return;
             
@@ -113,7 +153,7 @@ while True:
             isStepMode = false;
             const runButton = document.getElementById('run-code');
             const code = document.getElementById('code-input').value;
-            const delay = document.getElementById('delay-slider').value;
+            const delay = parseFloat(document.getElementById('delay-slider').value);
             
             if (!code.trim()) {
                 addOutput('Please enter some code to execute', 'error');
@@ -124,7 +164,7 @@ while True:
             runButton.disabled = true;
             runButton.textContent = '⏳ Running...';
             clearOutput();
-            addOutput(`Executing code with ${delay}s delay between actions...`);
+            addOutput(`Executing code with ${delay}s delay between frames...`);
 
             try {
                 const response = await fetch('/execute', {
@@ -133,31 +173,47 @@ while True:
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ 
-                        code: code,
-                        delay: parseFloat(delay)
+                        code: code
                     })
                 });
 
                 const result = await response.json();
 
-                if (result.success) {
-                    document.getElementById('grid-display').textContent = result.grid_state;
-                    addOutput(result.message, 'success');
-                    addOutput(`Commands used: ${result.command_count}`);
+                if (result.success || result.frames) {
+                    let finalFrame = null;
                     
-                    // Show action log if available
-                    if (result.action_log && result.action_log.length > 0) {
-                        addOutput('Action sequence:');
-                        result.action_log.forEach((action, index) => {
-                            addOutput(`  ${index + 1}. ${action}`);
-                        });
+                    // Animate through all frames
+                    if (result.frames && result.frames.length > 0) {
+                        finalFrame = await playAnimation(result.frames, delay);
+                    } else {
+                        // Fallback: just show final state
+                        document.getElementById('grid-display').textContent = result.grid_state;
                     }
                     
-                    // Update status
+                    // Show final results
+                    addOutput('─'.repeat(40));
+                    addOutput(result.message, result.success ? 'success' : 'error');
+                    addOutput(`Total commands used: ${result.command_count}`);
+                    
+                    // Update final status based on result (takes precedence over frame data)
                     document.getElementById('command-count').textContent = `Commands Used: ${result.command_count}`;
-                    document.getElementById('bot-status').textContent = result.win_state ? 
-                        'Bot Status: 🏆 VICTORY!' : 'Bot Status: ✅ COMPLETED';
-                    document.getElementById('bot-status').className = 'success';
+                    
+                    // Ensure the final grid state is displayed
+                    if (result.grid_state) {
+                        document.getElementById('grid-display').textContent = result.grid_state;
+                    }
+                    
+                    // Update status - use result data which is authoritative
+                    if (result.win_state) {
+                        document.getElementById('bot-status').textContent = 'Bot Status: 🏆 VICTORY!';
+                        document.getElementById('bot-status').className = 'success';
+                    } else if (!result.alive) {
+                        document.getElementById('bot-status').textContent = 'Bot Status: 💀 DEAD';
+                        document.getElementById('bot-status').className = 'error';
+                    } else {
+                        document.getElementById('bot-status').textContent = 'Bot Status: ✅ COMPLETED';
+                        document.getElementById('bot-status').className = '';
+                    }
                 } else {
                     addOutput('❌ ' + result.error, 'error');
                     document.getElementById('bot-status').textContent = 'Bot Status: ❌ ERROR';
