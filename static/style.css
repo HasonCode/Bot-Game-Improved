@@ -34,6 +34,96 @@ header p {
     opacity: 0.9;
 }
 
+.level-selector {
+    background: white;
+    border-radius: 15px;
+    padding: 20px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
+.level-info {
+    flex: 1;
+}
+
+.level-info h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.level-info p {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.level-meta {
+    display: flex;
+    gap: 10px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background: #e9ecef;
+    color: #495057;
+}
+
+.difficulty-easy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.difficulty-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.difficulty-hard {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.difficulty-expert {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.level-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.level-dropdown {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 250px;
+}
+
+.level-dropdown:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-nav {
+    padding: 10px 15px;
+    min-width: 100px;
+    background: #667eea;
+    color: white;
+}
+
 .game-area {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -260,6 +350,20 @@ header p {
     
     header h1 {
         font-size: 2rem;
+    }
+    
+    .level-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .level-controls {
+        flex-direction: column;
+    }
+    
+    .level-dropdown {
+        min-width: auto;
+        width: 100%;
     }
 }
 

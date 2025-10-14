@@ -1,6 +1,9 @@
 class WinInterruption(Exception):
     pass
 
+class MovesExceeded(Exception):
+    pass
+
 def exec_func(source, globals=None, locals=None):
     try:
         exec(source, globals, locals)
@@ -32,9 +35,13 @@ class Bot:
         self.i = grid.start_pos[0]
         self.j = grid.start_pos[1]
         self.alive = True
+        self.moves = 0
+        self.moves_limit = 1000
+
         
 
     def move_forward(self):
+        self.moves += 1
         directions = ["up", "left", "down", "right"]
         keys = [4, 6, 8, 10, 12]
         dir = directions[self.direction]
@@ -80,10 +87,12 @@ class Bot:
             raise WinInterruption
     
     def turn_right(self):
+        self.moves += 1
         self.direction -= 1
         self.direction %= 4
 
     def turn_left(self):
+        self.moves += 1
         self.direction += 1
         self.direction %= 4
     
@@ -114,6 +123,8 @@ class Bot:
         return False
     
     def check_win(self):
+        if self.moves > self.moves_limit:
+            raise MovesExceeded("Too many moves taken")
         if self.grid.get(self.i, self.j) == 3:
             return True
         return False
@@ -126,7 +137,7 @@ class Bot:
     
     def __str__(self):
         strong = ""
-        emojis = ["⬜ ","⬛ ","🟧 ","🟫 ", "🟡 ", "🟨 ", "🔴", "🟥", "🔵", "🟦", "🟢","🟩", "🟣","🟪"]
+        emojis = ["⬜ ","⬛ ","🟧 ","🟫 ", "🟡 ", "🟨 ", "🔴 ", "🟥 ", "🔵 ", "🟦 ", "🟢 ","🟩 ", "🟣 ","🟪 "]
         bot_emoji = ["⬆️ ","⬅️ ","⬇️ ","➡️ "]
         for i in range(self.grid.rows):
             for j in range(self.grid.cols):
@@ -158,6 +169,7 @@ def count_bot_commands(code:str):
 
 def interpreter(code:str, grid):
     bot = Bot(grid)
+    bot.moves = 0
     lines = code.split("\n")
     code_arr = []
     for line in lines:
@@ -172,7 +184,7 @@ def interpreter(code:str, grid):
         # if commands <= grid.par:
         #     print("Star")
         # else:
-        #     print("check")   
+        #     print("check")  
 
 
 griddy = [[1,1,1,1,1],

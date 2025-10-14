@@ -13,6 +13,22 @@
             <p>Write Python code to guide your bot to the finish line!</p>
         </header>
 
+        <div class="level-selector">
+            <div class="level-info">
+                <h2 id="level-title">Level 1: Loading...</h2>
+                <p id="level-description">Loading level...</p>
+                <div class="level-meta">
+                    <span id="level-difficulty" class="badge">Easy</span>
+                    <span id="level-size" class="badge">5x5</span>
+                </div>
+            </div>
+            <div class="level-controls">
+                <button id="prev-level" class="btn btn-nav">◀ Previous</button>
+                <select id="level-select" class="level-dropdown"></select>
+                <button id="next-level" class="btn btn-nav">Next ▶</button>
+            </div>
+        </div>
+
         <div class="game-area">
             <div class="grid-container">
                 <h3>Game Grid</h3>
@@ -76,10 +92,12 @@ while True:
     <script>
         // Bot Game JavaScript
         let isLoading = false;
+        let currentLevel = 1;
+        let allLevels = [];
 
         // Load initial grid
         document.addEventListener('DOMContentLoaded', function() {
-            loadGrid();
+            loadLevels();
             setupDelaySlider();
         });
 
@@ -92,12 +110,62 @@ while True:
             });
         }
 
-        async function loadGrid() {
+        async function loadLevels() {
             try {
-                const response = await fetch('/grid');
+                const response = await fetch('/levels');
                 const data = await response.json();
+                allLevels = data.levels;
+                
+                // Populate level dropdown
+                const dropdown = document.getElementById('level-select');
+                dropdown.innerHTML = '';
+                allLevels.forEach(level => {
+                    const option = document.createElement('option');
+                    option.value = level.number;
+                    option.textContent = `Level ${level.number}: ${level.name}`;
+                    dropdown.appendChild(option);
+                });
+                
+                // Load the first level
+                loadGrid(1);
+            } catch (error) {
+                addOutput('Error loading levels: ' + error.message, 'error');
+            }
+        }
+
+        async function loadGrid(levelNumber = null) {
+            if (levelNumber !== null) {
+                currentLevel = levelNumber;
+            }
+            
+            try {
+                const response = await fetch(`/grid?level=${currentLevel}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    addOutput('Error: ' + data.error, 'error');
+                    return;
+                }
+                
+                // Update grid display
                 document.getElementById('grid-display').textContent = data.grid_state;
-                document.getElementById('max-commands').textContent = `Max Commands: ${data.max_commands}`;
+                document.getElementById('max-commands').textContent = `Par: ${data.max_commands} commands`;
+                
+                // Update level info
+                const levelInfo = data.level_info;
+                document.getElementById('level-title').textContent = `Level ${levelInfo.number}: ${levelInfo.name}`;
+                document.getElementById('level-description').textContent = levelInfo.description;
+                document.getElementById('level-difficulty').textContent = levelInfo.difficulty;
+                document.getElementById('level-difficulty').className = `badge difficulty-${levelInfo.difficulty.toLowerCase()}`;
+                document.getElementById('level-size').textContent = levelInfo.size;
+                
+                // Update dropdown
+                document.getElementById('level-select').value = currentLevel;
+                
+                // Update navigation buttons
+                document.getElementById('prev-level').disabled = currentLevel === 1;
+                document.getElementById('next-level').disabled = currentLevel === allLevels.length;
+                
             } catch (error) {
                 addOutput('Error loading grid: ' + error.message, 'error');
             }
@@ -169,7 +237,8 @@ while True:
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ 
-                        code: code
+                        code: code,
+                        level: currentLevel
                     })
                 });
 
@@ -253,6 +322,29 @@ while True:
         // Event listeners
         document.getElementById('run-code').addEventListener('click', executeCode);
         document.getElementById('reset-grid').addEventListener('click', resetGrid);
+        
+        // Level navigation
+        document.getElementById('prev-level').addEventListener('click', function() {
+            if (currentLevel > 1) {
+                loadGrid(currentLevel - 1);
+                clearOutput();
+                addOutput(`Loaded Level ${currentLevel}`);
+            }
+        });
+        
+        document.getElementById('next-level').addEventListener('click', function() {
+            if (currentLevel < allLevels.length) {
+                loadGrid(currentLevel + 1);
+                clearOutput();
+                addOutput(`Loaded Level ${currentLevel}`);
+            }
+        });
+        
+        document.getElementById('level-select').addEventListener('change', function() {
+            loadGrid(parseInt(this.value));
+            clearOutput();
+            addOutput(`Loaded Level ${currentLevel}`);
+        });
 
         // Keyboard shortcut
         document.addEventListener('keydown', function(e) {

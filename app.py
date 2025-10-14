@@ -6,6 +6,7 @@ Flask web application for the Bot Game
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption
+import grids
 import re
 import time
 import threading
@@ -13,20 +14,8 @@ import threading
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Initialize the game grid (same as in python_decoder.py)
-GRID_DATA = [
-    [1,1,1,1,1],
-    [1,0,0,3,1],
-    [1,0,1,1,1],
-    [1,0,1,1,1],
-    [1,0,1,1,1]
-]
-ROBOT_START = (4,1)
-DIRECTION = 0
-MAX_COMMANDS = 3
-
-# Create the game grid
-game_grid = Grid(GRID_DATA, ROBOT_START, DIRECTION, MAX_COMMANDS)
+# Default level
+current_level = 1
 
 class AnimatedBot(Bot):
     """Bot class that captures each frame for animation"""
@@ -104,6 +93,7 @@ def execute_code():
             return jsonify({'success': False, 'error': 'No code provided'})
         
         code = data['code']
+        level_number = data.get('level', current_level)
         
         # Security check
         if not is_code_safe(code):
@@ -111,6 +101,9 @@ def execute_code():
                 'success': False, 
                 'error': 'Code contains potentially unsafe operations'
             })
+        
+        # Get the grid for the specified level
+        game_grid = grids.create_grid(level_number)
         
         # Create a new bot for this execution
         bot = AnimatedBot(game_grid)
@@ -193,12 +186,48 @@ def execute_code():
 
 @app.route('/grid')
 def get_grid():
-    """Get the current grid state"""
-    bot = Bot(game_grid)
+    """Get the current grid state for a specific level"""
+    level_number = request.args.get('level', current_level, type=int)
+    
+    try:
+        game_grid = grids.create_grid(level_number)
+        bot = Bot(game_grid)
+        level_info = grids.get_level_info(level_number)
+        
+        return jsonify({
+            'grid_state': str(bot),
+            'max_commands': game_grid.par,
+            'level_info': level_info
+        })
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/levels')
+def get_levels():
+    """Get list of all available levels"""
     return jsonify({
-        'grid_state': str(bot),
-        'max_commands': game_grid.par
+        'levels': grids.list_all_levels(),
+        'total': len(grids.ALL_LEVELS)
     })
+
+@app.route('/level/<int:level_number>')
+def get_level_details(level_number):
+    """Get detailed information about a specific level"""
+    try:
+        level_info = grids.get_level_info(level_number)
+        game_grid = grids.create_grid(level_number)
+        bot = Bot(game_grid)
+        
+        return jsonify({
+            'level_info': level_info,
+            'grid_state': str(bot),
+            'grid_size': {
+                'rows': game_grid.rows,
+                'cols': game_grid.cols
+            }
+        })
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
