@@ -9,7 +9,8 @@ def exec_func(source, globals=None, locals=None):
 
 class Grid:
     """Data denotes tile types: 0 = blank tile, 1 = basic wall tile, 2 = zappy wall tile, 3 = end
-       4 = Yellow key, 5 = Yellow gate, 6 = Red key, 7 = Red gate, 8 = Blue key, 9 = Blue gate 
+       4 = Yellow key, 5 = Yellow gate, 6 = Red key, 7 = Red gate, 8 = Blue key, 9 = Blue gate,
+       10 = Green key, 11 = Green gate, 12 = Purple key, 13 = Purple gate 
     """
     def __init__(self, data, start_pos, start_dir, par):
         self.start_pos = start_pos
@@ -35,29 +36,42 @@ class Bot:
 
     def move_forward(self):
         directions = ["up", "left", "down", "right"]
+        keys = [4, 6, 8, 10, 12]
         dir = directions[self.direction]
         if dir == "up" and self.alive and not self.win_state:
             if self.can_move():
                 if self.grid.data[self.i-1][self.j] == 2:
                     self.reset()
+                elif self.grid.data[self.i-1][self.j] in keys:
+                    self.pick_up(self.grid.data[self.i-1][self.j], (self.i-1, self.j))
+                    self.i -= 1
                 else:
                     self.i -= 1
         elif dir == "down" and self.alive and not self.win_state:
             if self.can_move():
                 if self.grid.data[self.i+1][self.j] == 2:
                     self.reset()
+                elif self.grid.data[self.i+1][self.j] in keys:
+                    self.pick_up(self.grid.data[self.i+1][self.j], (self.i+1, self.j))
+                    self.i += 1
                 else:
                     self.i += 1
         if dir == "right" and self.alive and not self.win_state:
             if self.can_move():
                 if self.grid.data[self.i][self.j+1] == 2:
                     self.reset()
+                elif self.grid.data[self.i][self.j+1] in keys:
+                    self.pick_up(self.grid.data[self.i][self.j+1], (self.i, self.j+1))
+                    self.j += 1
                 else:
                     self.j+=1
         if dir == "left" and self.alive and not self.win_state:
             if self.can_move():
                 if self.grid.data[self.i][self.j-1] == 2:
                     self.reset()
+                elif self.grid.data[self.i][self.j-1] in keys:
+                    self.pick_up(self.grid.data[self.i][self.j-1], (self.i, self.j-1))
+                    self.j -= 1
                 else:
                     self.j -= 1
         # print(self.__str__())
@@ -72,6 +86,15 @@ class Bot:
     def turn_left(self):
         self.direction += 1
         self.direction %= 4
+    
+    def pick_up(self, key, key_location):
+        for i in range(self.grid.rows):
+            for j in range(self.grid.cols):
+                if self.grid.data[i][j]==key+1:
+                    self.grid.data[i][j] = 0
+                if i == key_location[0] and j == key_location[1]:
+                    self.grid.data[i][j] = 0
+        
     
     def can_move(self):
         directions = ["up", "left", "down", "right"]
@@ -103,7 +126,7 @@ class Bot:
     
     def __str__(self):
         strong = ""
-        emojis = ["⬜ ","⬛ ","🟦 ","🟫 "]
+        emojis = ["⬜ ","⬛ ","🟧 ","🟫 ", "🟡 ", "🟨 ", "🔴", "🟥", "🔵", "🟦", "🟢","🟩", "🟣","🟪"]
         bot_emoji = ["⬆️ ","⬅️ ","⬇️ ","➡️ "]
         for i in range(self.grid.rows):
             for j in range(self.grid.cols):

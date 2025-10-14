@@ -49,7 +49,6 @@ while True:
                 
                 <div class="button-group">
                     <button id="run-code" class="btn btn-primary">🚀 Run Code</button>
-                    <button id="step-code" class="btn btn-secondary">👆 Step Through</button>
                     <button id="reset-grid" class="btn btn-secondary">🔄 Reset</button>
                 </div>
                 
@@ -77,8 +76,6 @@ while True:
     <script>
         // Bot Game JavaScript
         let isLoading = false;
-        let currentStep = 0;
-        let isStepMode = false;
 
         // Load initial grid
         document.addEventListener('DOMContentLoaded', function() {
@@ -150,7 +147,6 @@ while True:
             if (isLoading) return;
             
             isLoading = true;
-            isStepMode = false;
             const runButton = document.getElementById('run-code');
             const code = document.getElementById('code-input').value;
             const delay = parseFloat(document.getElementById('delay-slider').value);
@@ -231,94 +227,11 @@ while True:
             isLoading = false;
         }
 
-        async function executeStep() {
-            if (isLoading) return;
-            
-            const stepButton = document.getElementById('step-code');
-            const code = document.getElementById('code-input').value;
-            
-            if (!code.trim()) {
-                addOutput('Please enter some code to execute', 'error');
-                return;
-            }
-
-            if (!isStepMode) {
-                isStepMode = true;
-                currentStep = 0;
-                clearOutput();
-                addOutput('Step-by-step mode activated. Click "Step Through" to execute one command at a time.');
-                stepButton.textContent = '👆 Next Step';
-                return;
-            }
-
-            isLoading = true;
-            stepButton.disabled = true;
-            stepButton.textContent = '⏳ Stepping...';
-
-            try {
-                const response = await fetch('/execute-step', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        code: code,
-                        step: currentStep
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('grid-display').textContent = result.grid_state;
-                    
-                    if (result.last_action) {
-                        addOutput(`Step ${currentStep + 1}: ${result.last_action}`);
-                    }
-                    
-                    currentStep++;
-                    
-                    if (result.win_state) {
-                        addOutput('🏆 VICTORY! Bot reached the finish line!', 'success');
-                        isStepMode = false;
-                        stepButton.textContent = '👆 Step Through';
-                    } else if (!result.alive) {
-                        addOutput('💀 Bot died!', 'error');
-                        isStepMode = false;
-                        stepButton.textContent = '👆 Step Through';
-                    }
-                    
-                    // Update status
-                    document.getElementById('bot-status').textContent = result.win_state ? 
-                        'Bot Status: 🏆 VICTORY!' : result.alive ? 'Bot Status: 🏃 ALIVE' : 'Bot Status: 💀 DEAD';
-                    document.getElementById('bot-status').className = result.win_state ? 'success' : result.alive ? '' : 'error';
-                } else {
-                    addOutput('❌ ' + result.error, 'error');
-                    isStepMode = false;
-                    stepButton.textContent = '👆 Step Through';
-                }
-
-            } catch (error) {
-                addOutput('Network error: ' + error.message, 'error');
-                isStepMode = false;
-                stepButton.textContent = '👆 Step Through';
-            }
-
-            stepButton.disabled = false;
-            if (isStepMode) {
-                stepButton.textContent = '👆 Next Step';
-            }
-            isLoading = false;
-        }
-
         function resetGrid() {
             document.getElementById('bot-status').textContent = 'Bot Status: Ready';
             document.getElementById('bot-status').className = '';
             document.getElementById('command-count').textContent = 'Commands Used: 0';
             document.getElementById('command-count').className = '';
-            currentStep = 0;
-            isStepMode = false;
-            document.getElementById('step-code').textContent = '👆 Step Through';
             loadGrid();
             clearOutput();
             addOutput('Grid reset to starting position');
@@ -339,7 +252,6 @@ while True:
 
         // Event listeners
         document.getElementById('run-code').addEventListener('click', executeCode);
-        document.getElementById('step-code').addEventListener('click', executeStep);
         document.getElementById('reset-grid').addEventListener('click', resetGrid);
 
         // Keyboard shortcut

@@ -39,19 +39,14 @@ The game features a **frame-by-frame animation system**:
 | `bot.turn_right()` | Turn the bot right (clockwise) |
 | `bot.can_move()` | Check if the bot can move forward (returns True/False) |
 
-### Execution Modes
+### Controls
 
 1. **🚀 Run Code** - Execute all commands with animated frames
-   - Adjust animation speed with the slider
+   - Adjust animation speed with the slider (0-2 seconds)
    - See each move and turn in sequence
    - Final result shown after animation completes
 
-2. **👆 Step Through** - Execute one command at a time
-   - Click once to activate
-   - Click again to execute next command
-   - Perfect for debugging
-
-3. **🔄 Reset** - Reset the bot to starting position
+2. **🔄 Reset** - Reset the bot to starting position
 
 ## 📊 Game Elements
 
