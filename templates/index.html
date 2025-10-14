@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Bot Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Bot Game</h1>
+            <p>Write Python code to guide your bot to the finish line!</p>
+        </header>
+
+        <div class="game-area">
+            <div class="grid-container">
+                <h3>Game Grid</h3>
+                <div id="grid-display" class="grid-display">
+                    Loading grid...
+                </div>
+                <div class="game-info">
+                    <div id="bot-status">Bot Status: Ready</div>
+                    <div id="command-count">Commands Used: 0</div>
+                    <div id="max-commands">Max Commands: 3</div>
+                </div>
+            </div>
+
+            <div class="code-area">
+                <h3>Your Python Code</h3>
+                <textarea id="code-input" placeholder="Write your bot code here...
+
+Example:
+while True:
+    if bot.can_move():
+        bot.move_forward()
+    else:
+        bot.turn_right()">while True:
+    if bot.can_move():
+        bot.move_forward()
+    else:
+        bot.turn_right()</textarea>
+                
+                <div class="controls">
+                    <label for="delay-slider">Animation Speed:</label>
+                    <input type="range" id="delay-slider" min="0" max="2" step="0.1" value="0.5">
+                    <span id="delay-value">0.5s</span>
+                </div>
+                
+                <div class="button-group">
+                    <button id="run-code" class="btn btn-primary">🚀 Run Code</button>
+                    <button id="step-code" class="btn btn-secondary">👆 Step Through</button>
+                    <button id="reset-grid" class="btn btn-secondary">🔄 Reset</button>
+                </div>
+                
+                <div class="output-area">
+                    <h4>Output</h4>
+                    <div id="output">Ready to execute code...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <ul>
+                <li><strong>bot.move_forward()</strong> - Move the bot forward in its current direction</li>
+                <li><strong>bot.turn_left()</strong> - Turn the bot left (counterclockwise)</li>
+                <li><strong>bot.turn_right()</strong> - Turn the bot right (clockwise)</li>
+                <li><strong>bot.can_move()</strong> - Check if the bot can move forward (returns True/False)</li>
+            </ul>
+            <p><strong>Goal:</strong> Get your bot (🤖) to reach the finish line (🟫) using as few commands as possible!</p>
+            <p><strong>Legend:</strong> ⬜ Empty, ⬛ Wall, 🟦 Special wall, 🟫 Finish line</p>
+            <p><strong>Bot Directions:</strong> ⬆️ Up, ⬅️ Left, ⬇️ Down, ➡️ Right</p>
+        </div>
+    </div>
+
+    <script>
+        // Bot Game JavaScript
+        let isLoading = false;
+        let currentStep = 0;
+        let isStepMode = false;
+
+        // Load initial grid
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGrid();
+            setupDelaySlider();
+        });
+
+        function setupDelaySlider() {
+            const slider = document.getElementById('delay-slider');
+            const value = document.getElementById('delay-value');
+            
+            slider.addEventListener('input', function() {
+                value.textContent = this.value + 's';
+            });
+        }
+
+        async function loadGrid() {
+            try {
+                const response = await fetch('/grid');
+                const data = await response.json();
+                document.getElementById('grid-display').textContent = data.grid_state;
+                document.getElementById('max-commands').textContent = `Max Commands: ${data.max_commands}`;
+            } catch (error) {
+                addOutput('Error loading grid: ' + error.message, 'error');
+            }
+        }
+
+        async function executeCode() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            isStepMode = false;
+            const runButton = document.getElementById('run-code');
+            const code = document.getElementById('code-input').value;
+            const delay = document.getElementById('delay-slider').value;
+            
+            if (!code.trim()) {
+                addOutput('Please enter some code to execute', 'error');
+                isLoading = false;
+                return;
+            }
+
+            runButton.disabled = true;
+            runButton.textContent = '⏳ Running...';
+            clearOutput();
+            addOutput(`Executing code with ${delay}s delay between actions...`);
+
+            try {
+                const response = await fetch('/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        code: code,
+                        delay: parseFloat(delay)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('grid-display').textContent = result.grid_state;
+                    addOutput(result.message, 'success');
+                    addOutput(`Commands used: ${result.command_count}`);
+                    
+                    // Show action log if available
+                    if (result.action_log && result.action_log.length > 0) {
+                        addOutput('Action sequence:');
+                        result.action_log.forEach((action, index) => {
+                            addOutput(`  ${index + 1}. ${action}`);
+                        });
+                    }
+                    
+                    // Update status
+                    document.getElementById('command-count').textContent = `Commands Used: ${result.command_count}`;
+                    document.getElementById('bot-status').textContent = result.win_state ? 
+                        'Bot Status: 🏆 VICTORY!' : 'Bot Status: ✅ COMPLETED';
+                    document.getElementById('bot-status').className = 'success';
+                } else {
+                    addOutput('❌ ' + result.error, 'error');
+                    document.getElementById('bot-status').textContent = 'Bot Status: ❌ ERROR';
+                    document.getElementById('bot-status').className = 'error';
+                }
+
+            } catch (error) {
+                addOutput('Network error: ' + error.message, 'error');
+                document.getElementById('bot-status').textContent = 'Bot Status: ❌ CONNECTION ERROR';
+                document.getElementById('bot-status').className = 'error';
+            }
+
+            runButton.disabled = false;
+            runButton.textContent = '🚀 Run Code';
+            isLoading = false;
+        }
+
+        async function executeStep() {
+            if (isLoading) return;
+            
+            const stepButton = document.getElementById('step-code');
+            const code = document.getElementById('code-input').value;
+            
+            if (!code.trim()) {
+                addOutput('Please enter some code to execute', 'error');
+                return;
+            }
+
+            if (!isStepMode) {
+                isStepMode = true;
+                currentStep = 0;
+                clearOutput();
+                addOutput('Step-by-step mode activated. Click "Step Through" to execute one command at a time.');
+                stepButton.textContent = '👆 Next Step';
+                return;
+            }
+
+            isLoading = true;
+            stepButton.disabled = true;
+            stepButton.textContent = '⏳ Stepping...';
+
+            try {
+                const response = await fetch('/execute-step', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        code: code,
+                        step: currentStep
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('grid-display').textContent = result.grid_state;
+                    
+                    if (result.last_action) {
+                        addOutput(`Step ${currentStep + 1}: ${result.last_action}`);
+                    }
+                    
+                    currentStep++;
+                    
+                    if (result.win_state) {
+                        addOutput('🏆 VICTORY! Bot reached the finish line!', 'success');
+                        isStepMode = false;
+                        stepButton.textContent = '👆 Step Through';
+                    } else if (!result.alive) {
+                        addOutput('💀 Bot died!', 'error');
+                        isStepMode = false;
+                        stepButton.textContent = '👆 Step Through';
+                    }
+                    
+                    // Update status
+                    document.getElementById('bot-status').textContent = result.win_state ? 
+                        'Bot Status: 🏆 VICTORY!' : result.alive ? 'Bot Status: 🏃 ALIVE' : 'Bot Status: 💀 DEAD';
+                    document.getElementById('bot-status').className = result.win_state ? 'success' : result.alive ? '' : 'error';
+                } else {
+                    addOutput('❌ ' + result.error, 'error');
+                    isStepMode = false;
+                    stepButton.textContent = '👆 Step Through';
+                }
+
+            } catch (error) {
+                addOutput('Network error: ' + error.message, 'error');
+                isStepMode = false;
+                stepButton.textContent = '👆 Step Through';
+            }
+
+            stepButton.disabled = false;
+            if (isStepMode) {
+                stepButton.textContent = '👆 Next Step';
+            }
+            isLoading = false;
+        }
+
+        function resetGrid() {
+            document.getElementById('bot-status').textContent = 'Bot Status: Ready';
+            document.getElementById('bot-status').className = '';
+            document.getElementById('command-count').textContent = 'Commands Used: 0';
+            document.getElementById('command-count').className = '';
+            currentStep = 0;
+            isStepMode = false;
+            document.getElementById('step-code').textContent = '👆 Step Through';
+            loadGrid();
+            clearOutput();
+            addOutput('Grid reset to starting position');
+        }
+
+        function addOutput(message, type = 'normal') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        // Event listeners
+        document.getElementById('run-code').addEventListener('click', executeCode);
+        document.getElementById('step-code').addEventListener('click', executeStep);
+        document.getElementById('reset-grid').addEventListener('click', resetGrid);
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                executeCode();
+            }
+        });
+    </script>
+</body>
+</html>
+

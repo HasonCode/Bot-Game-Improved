@@ -60,7 +60,7 @@ class Bot:
                     self.reset()
                 else:
                     self.j -= 1
-        print(self.__str__())
+        # print(self.__str__())
         self.win_state = self.check_win()
         if (self.win_state):
             raise WinInterruption
@@ -76,7 +76,6 @@ class Bot:
     def can_move(self):
         directions = ["up", "left", "down", "right"]
         dir = directions[self.direction]
-        print(dir)
         if dir == "up":
             if self.i > 0:
                 return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9]
@@ -85,7 +84,6 @@ class Bot:
                 return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9]
         elif dir == "right":
             if self.j < self.grid.cols:
-                print("why")
                 return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9]
         elif dir == "left":
             if self.j > 0:
@@ -148,10 +146,10 @@ def interpreter(code:str, grid):
     exec_func(mod_string, globals={"bot":bot})
     if bot.win_state:
         commands = count_bot_commands(mod_string)
-        if commands <= grid.par:
-            print("Star")
-        else:
-            print("check")   
+        # if commands <= grid.par:
+        #     print("Star")
+        # else:
+        #     print("check")   
 
 
 griddy = [[1,1,1,1,1],
@@ -165,11 +163,3 @@ grid = Grid(griddy, robot_start, direction, 3)
 
 bot = Bot(grid)
 
-
-interpreter("""
-import requests
-while True:
-    if (bot.can_move()):
-        bot.move_forward()
-    else:
-        bot.turn_right()""", grid)
