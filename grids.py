@@ -79,6 +79,27 @@ LEVEL_3 = {
 }
 
 LEVEL_4 = {
+    'name': 'The Rocks',
+    'description': 'Find your way through the rough terrain',
+    'data': [
+        [1,1,0,0,0,1,1,1,1,1],
+        [1,1,0,1,0,0,1,1,1,1],
+        [1,0,0,1,1,0,0,1,1,1],
+        [1,0,0,1,1,1,0,0,1,1],
+        [1,0,1,1,1,1,1,0,0,1],
+        [1,0,1,1,1,1,1,1,0,1],
+        [0,0,1,1,1,1,1,1,0,0],
+        [1,0,0,1,1,1,1,1,1,0],
+        [1,0,0,1,1,3,1,0,0,0],
+        [1,1,0,0,1,0,0,0,1,1]
+    ],
+    'start_pos': (9,3),
+    'start_dir': 1,
+    'par': 4,
+    'difficulty': 'Medium'
+}
+
+LEVEL_5 = {
     'name': 'Spiral',
     'description': 'Navigate the spiral path',
     'data': [
@@ -100,7 +121,7 @@ LEVEL_4 = {
     'difficulty': 'Medium'
 }
 
-LEVEL_5 = {
+LEVEL_6 = {
     'name': 'The Trap',
     'description': 'Avoid the zappy walls!',
     'data': [
@@ -119,7 +140,7 @@ LEVEL_5 = {
     'difficulty': 'Medium'
 }
 
-LEVEL_6 = {
+LEVEL_7 = {
     'name': 'Key Hunt',
     'description': 'Collect the yellow key to open the gate',
     'data': [
@@ -139,7 +160,7 @@ LEVEL_6 = {
     'difficulty': 'Hard'
 }
 
-LEVEL_7 = {
+LEVEL_8 = {
     'name': 'Double Keys',
     'description': 'Navigate through multiple locked gates',
     'data': [
@@ -159,7 +180,25 @@ LEVEL_7 = {
     'difficulty': 'Hard'
 }
 
-LEVEL_8 = {
+LEVEL_9 = {
+    'name': 'Red Key Challenge',
+    'description': 'Collect the red key to pass through the red gate',
+    'data': [
+        [1,0,0,0,0,0,7],  # Row 0: wall, empty, empty, empty, empty, empty, red gate
+        [1,1,1,1,1,1,1],  # Row 1: all walls
+        [1,0,0,0,0,0,1],  # Row 2: wall, empty path, wall
+        [1,6,1,0,1,0,1],  # Row 3: wall, red key, wall, empty, wall, empty, wall
+        [1,0,1,0,1,0,1],  # Row 4: wall, empty, wall, empty, wall, empty, wall
+        [1,0,1,0,1,0,1],  # Row 5: wall, empty, wall, empty, wall, empty, wall
+        [0,1,0,0,0,0,1]   # Row 6: empty (bot start), wall, empty path, wall
+    ],
+    'start_pos': (6,0),
+    'start_dir': 3,  # Facing right
+    'par': 12,
+    'difficulty': 'Medium'
+}
+
+LEVEL_9 = {
     'name': 'The Challenge',
     'description': 'The ultimate test of your skills',
     'data': [
