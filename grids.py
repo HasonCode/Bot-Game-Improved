@@ -79,6 +79,23 @@ LEVEL_3 = {
 }
 
 LEVEL_4 = {
+    'name': 'Red Key Challenge',
+    'description': 'Collect the red key to pass through the red gate',
+    'data': [
+        [1,0,0,0,0,0,3],  # Row 0: wall, empty, empty, empty, empty, empty, red gate
+        [1,1,1,1,1,7,1],  # Row 1: all walls
+        [6,0,0,0,1,0,1],  # Row 2: wall, red key, wall, empty, wall, empty, wall
+        [1,1,0,0,0,0,1],  # Row 3: wall, empty, wall, empty, wall, empty, wall
+        [0,0,0,1,1,1,1],  # Row 4: wall, empty, wall, empty, wall, empty, wall
+        [0,1,1,1,1,1,1]   # Row 5: empty (bot start), wall, empty path, wall
+    ],
+    'start_pos': (6,0),
+    'start_dir': 3,  # Facing right
+    'par': 12,
+    'difficulty': 'Medium'
+}
+
+LEVEL_5 = {
     'name': 'The Rocks',
     'description': 'Find your way through the rough terrain',
     'data': [
@@ -99,7 +116,7 @@ LEVEL_4 = {
     'difficulty': 'Medium'
 }
 
-LEVEL_5 = {
+LEVEL_6 = {
     'name': 'Spiral',
     'description': 'Navigate the spiral path',
     'data': [
@@ -121,7 +138,7 @@ LEVEL_5 = {
     'difficulty': 'Medium'
 }
 
-LEVEL_6 = {
+LEVEL_7 = {
     'name': 'The Trap',
     'description': 'Avoid the zappy walls!',
     'data': [
@@ -140,7 +157,7 @@ LEVEL_6 = {
     'difficulty': 'Medium'
 }
 
-LEVEL_7 = {
+LEVEL_8 = {
     'name': 'Key Hunt',
     'description': 'Collect the yellow key to open the gate',
     'data': [
@@ -160,7 +177,7 @@ LEVEL_7 = {
     'difficulty': 'Hard'
 }
 
-LEVEL_8 = {
+LEVEL_9 = {
     'name': 'Double Keys',
     'description': 'Navigate through multiple locked gates',
     'data': [
@@ -180,25 +197,28 @@ LEVEL_8 = {
     'difficulty': 'Hard'
 }
 
-LEVEL_9 = {
-    'name': 'Red Key Challenge',
-    'description': 'Collect the red key to pass through the red gate',
+LEVEL_10 = {
+    'name': 'Key Mania',
+    'description': 'Collect all the keys without touching the zappy walls',
     'data': [
-        [1,0,0,0,0,0,7],  # Row 0: wall, empty, empty, empty, empty, empty, red gate
-        [1,1,1,1,1,1,1],  # Row 1: all walls
-        [1,0,0,0,0,0,1],  # Row 2: wall, empty path, wall
-        [1,6,1,0,1,0,1],  # Row 3: wall, red key, wall, empty, wall, empty, wall
-        [1,0,1,0,1,0,1],  # Row 4: wall, empty, wall, empty, wall, empty, wall
-        [1,0,1,0,1,0,1],  # Row 5: wall, empty, wall, empty, wall, empty, wall
-        [0,1,0,0,0,0,1]   # Row 6: empty (bot start), wall, empty path, wall
+        [2,2,10,0,0,0,0 ,2,12,0],
+        [2,0, 0,2,2,2,0 ,2, 2,0],
+        [0,0, 0,0,2,0,0 ,0, 0,0],
+        [0,0, 2,0,0,0,2 ,2, 0,2],
+        [0,2, 2,0,2,2,2 ,0, 0,2],
+        [0,0, 0,0,0,2,0 ,0, 0,2],
+        [0,2, 0,2,8,0,0 ,2, 0,2],
+        [0,0, 0,2,2,0,0 ,2, 6,2],
+        [0,2, 0,2,0,0,2 ,2, 2,2],
+        [0,0, 0,2,0,0,11,13,7,9]
     ],
-    'start_pos': (6,0),
-    'start_dir': 3,  # Facing right
-    'par': 12,
-    'difficulty': 'Medium'
+    'start_pos':(9,0),
+    'start_dir': 3,
+    'par': 25,
+    'difficulty': 'Expert'
 }
 
-LEVEL_9 = {
+LEVEL_11 = {
     'name': 'The Challenge',
     'description': 'The ultimate test of your skills',
     'data': [
@@ -234,7 +254,10 @@ ALL_LEVELS = [
     LEVEL_5,
     LEVEL_6,
     LEVEL_7,
-    LEVEL_8
+    LEVEL_8,
+    LEVEL_9,
+    LEVEL_10,
+    LEVEL_11
 ]
 
 # ============================================================================
