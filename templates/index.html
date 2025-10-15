@@ -28,7 +28,6 @@
                     <span id="level-difficulty" class="badge">Easy</span>
                     <span id="level-size" class="badge">5x5</span>
                     <span id="level-best" class="badge level-stats" style="display:none;">🏆 Best: 0</span>
-                    <span id="level-attempts" class="badge level-stats" style="display:none;">🎯 Attempts: 0</span>
                 </div>
             </div>
             <div class="level-controls">
@@ -88,12 +87,16 @@ while True:
             <h3>How to Play</h3>
             <ul>
                 <li><strong>bot.move_forward()</strong> - Move the bot forward in its current direction</li>
+                <li><strong>bot.move_backward()</strong> - Move the bot backward from its current direction</li>
                 <li><strong>bot.turn_left()</strong> - Turn the bot left (counterclockwise)</li>
                 <li><strong>bot.turn_right()</strong> - Turn the bot right (clockwise)</li>
                 <li><strong>bot.can_move()</strong> - Check if the bot can move forward (returns True/False)</li>
+                <li><strong>bot.can_move_back()</strong> - Check if the bot can move backward (returns True/False)</li>
+
             </ul>
             <p><strong>Goal:</strong> Get your bot (🤖) to reach the finish line (🟫) using as few commands as possible!</p>
-            <p><strong>Legend:</strong> ⬜ Empty, ⬛ Wall, 🟦 Special wall, 🟫 Finish line</p>
+            <p><strong>Legend:</strong> ⬜ Empty, ⬛ Wall, 🟧 Zappy wall, 🟫 Finish line</p>
+            <p><strong>Keys & Gates:</strong> 🟡 Yellow key, 🟨 Yellow gate, 🔴 Red key, 🟥 Red gate, 🔵 Blue key, 🟦 Blue gate, 🟢 Green key, 🟩 Green gate, 🟣 Purple key, 🟪 Purple gate</p>
             <p><strong>Bot Directions:</strong> ⬆️ Up, ⬅️ Left, ⬇️ Down, ➡️ Right</p>
         </div>
     </div>
@@ -103,11 +106,13 @@ while True:
         let isLoading = false;
         let currentLevel = 1;
         let allLevels = [];
+        let shouldInterrupt = false;  // Flag to interrupt execution
 
         // Load initial grid
         document.addEventListener('DOMContentLoaded', function() {
             loadLevels();
             setupDelaySlider();
+            setupTabSupport();
         });
 
         function setupDelaySlider() {
@@ -116,6 +121,28 @@ while True:
             
             slider.addEventListener('input', function() {
                 value.textContent = this.value + 's';
+            });
+        }
+
+        function setupTabSupport() {
+            const codeInput = document.getElementById('code-input');
+            if (!codeInput) return;
+            
+            codeInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    
+                    // Get cursor position
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    
+                    // Insert tab character (4 spaces)
+                    const tab = '    ';
+                    this.value = this.value.substring(0, start) + tab + this.value.substring(end);
+                    
+                    // Move cursor after the inserted tab
+                    this.selectionStart = this.selectionEnd = start + tab.length;
+                }
             });
         }
 
@@ -249,25 +276,17 @@ while True:
                     completionIcon.textContent = icon;
                 }
                 
-                // Update stats if level has been attempted
+                // Update stats if level has been completed
                 const levelBest = document.getElementById('level-best');
-                const levelAttempts = document.getElementById('level-attempts');
                 
-                if (progress.attempts > 0) {
+                if (progress.completed && progress.best_commands) {
                     if (levelBest) {
                         levelBest.style.display = 'inline-block';
-                        levelBest.textContent = `🏆 Best: ${progress.best_commands || 'N/A'}`;
-                    }
-                    if (levelAttempts) {
-                        levelAttempts.style.display = 'inline-block';
-                        levelAttempts.textContent = `🎯 Attempts: ${progress.attempts}`;
+                        levelBest.textContent = `🏆 Best: ${progress.best_commands}`;
                     }
                 } else {
                     if (levelBest) {
                         levelBest.style.display = 'none';
-                    }
-                    if (levelAttempts) {
-                        levelAttempts.style.display = 'none';
                     }
                 }
             } catch (error) {
@@ -280,6 +299,12 @@ while True:
              * Play frames sequentially with delay between each frame
              */
             for (let i = 0; i < frames.length; i++) {
+                // Check for interruption
+                if (shouldInterrupt) {
+                    addOutput('⏹️ Execution interrupted!', 'error');
+                    throw new Error('Execution interrupted by user');
+                }
+                
                 const frame = frames[i];
                 
                 // Update grid display
@@ -325,6 +350,7 @@ while True:
             if (isLoading) return;
             
             isLoading = true;
+            shouldInterrupt = false;  // Reset interrupt flag
             const runButton = document.getElementById('run-code');
             const codeInput = document.getElementById('code-input');
             const delaySlider = document.getElementById('delay-slider');
@@ -474,11 +500,20 @@ while True:
                 }
 
             } catch (error) {
-                addOutput('Network error: ' + error.message, 'error');
-                const botStatusElement = document.getElementById('bot-status');
-                if (botStatusElement) {
-                    botStatusElement.textContent = 'Bot Status: ❌ CONNECTION ERROR';
-                    botStatusElement.className = 'error';
+                if (error.message === 'Execution interrupted by user') {
+                    // Interruption already logged in playAnimation
+                    const botStatusElement = document.getElementById('bot-status');
+                    if (botStatusElement) {
+                        botStatusElement.textContent = 'Bot Status: ⏹️ INTERRUPTED';
+                        botStatusElement.className = 'error';
+                    }
+                } else {
+                    addOutput('Network error: ' + error.message, 'error');
+                    const botStatusElement = document.getElementById('bot-status');
+                    if (botStatusElement) {
+                        botStatusElement.textContent = 'Bot Status: ❌ CONNECTION ERROR';
+                        botStatusElement.className = 'error';
+                    }
                 }
             }
 
@@ -490,6 +525,9 @@ while True:
         }
 
         async function resetGrid() {
+            // Set interrupt flag to stop any running execution
+            shouldInterrupt = true;
+            
             const botStatusElement = document.getElementById('bot-status');
             if (botStatusElement) {
                 botStatusElement.textContent = 'Bot Status: Ready';

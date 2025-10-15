@@ -261,8 +261,6 @@ def save_level_progress(level_number, commands_used, par, completed):
     level_key = str(level_number)
     progress = get_level_progress(level_number)
     
-    progress['attempts'] += 1
-    
     if completed:
         progress['completed'] = True
         
@@ -316,10 +314,7 @@ def get_completion_icon(level_number):
     progress = get_level_progress(level_number)
     
     if not progress.get('completed', False):
-        if progress.get('attempts', 0) > 0:
-            return "🔄"  # Attempted but not completed
-        else:
-            return "⚪"  # Not attempted
+        return "⚪"  # Not completed
     
     # Binary system: star (par or better) or checkmark (over par)
     # These are mutually exclusive - if has_star is True, show star; otherwise checkmark

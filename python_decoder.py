@@ -39,6 +39,51 @@ class Bot:
         self.moves_limit = 1000
 
         
+    def move_backward(self):
+        self.moves += 1
+        directions = ["up", "left", "down", "right"]
+        keys = [4, 6, 8, 10, 12]
+        dir = directions[self.direction]
+        if dir == "down" and self.alive and not self.win_state:
+            if self.can_move_back():
+                if self.grid.data[self.i-1][self.j] == 2:
+                    self.reset()
+                elif self.grid.data[self.i-1][self.j] in keys:
+                    self.pick_up(self.grid.data[self.i-1][self.j], (self.i-1, self.j))
+                    self.i -= 1
+                else:
+                    self.i -= 1
+        elif dir == "up" and self.alive and not self.win_state:
+            if self.can_move_back():
+                if self.grid.data[self.i+1][self.j] == 2:
+                    self.reset()
+                elif self.grid.data[self.i+1][self.j] in keys:
+                    self.pick_up(self.grid.data[self.i+1][self.j], (self.i+1, self.j))
+                    self.i += 1
+                else:
+                    self.i += 1
+        if dir == "left" and self.alive and not self.win_state:
+            if self.can_move_back():
+                if self.grid.data[self.i][self.j+1] == 2:
+                    self.reset()
+                elif self.grid.data[self.i][self.j+1] in keys:
+                    self.pick_up(self.grid.data[self.i][self.j+1], (self.i, self.j+1))
+                    self.j += 1
+                else:
+                    self.j+=1
+        if dir == "right" and self.alive and not self.win_state:
+            if self.can_move_back():
+                if self.grid.data[self.i][self.j-1] == 2:
+                    self.reset()
+                elif self.grid.data[self.i][self.j-1] in keys:
+                    self.pick_up(self.grid.data[self.i][self.j-1], (self.i, self.j-1))
+                    self.j -= 1
+                else:
+                    self.j -= 1
+        # print(self.__str__())
+        self.win_state = self.check_win()
+        if (self.win_state):
+            raise WinInterruption
 
     def move_forward(self):
         self.moves += 1
@@ -104,7 +149,26 @@ class Bot:
                 if i == key_location[0] and j == key_location[1]:
                     self.grid.data[i][j] = 0
         
-    
+    def can_move_back(self):
+        # Safety check: ensure bot position is valid
+        if not (0 <= self.i < self.grid.rows and 0 <= self.j < self.grid.cols):
+            return False
+            
+        directions = ["up", "left", "down", "right"]
+        dir = directions[self.direction]
+        if dir == "down":
+            if self.i > 0:
+                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9]
+        elif dir == "up":
+            if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
+                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9]
+        elif dir == "left":
+            if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
+                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9]
+        elif dir == "right":
+            if self.j > 0:
+                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9]
+        return False
     def can_move(self):
         # Safety check: ensure bot position is valid
         if not (0 <= self.i < self.grid.rows and 0 <= self.j < self.grid.cols):
@@ -125,7 +189,7 @@ class Bot:
             if self.j > 0:
                 return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9]
         return False
-    
+
     def check_win(self):
         if self.moves > self.moves_limit:
             raise MovesExceeded("Too many moves taken")
@@ -141,8 +205,8 @@ class Bot:
     
     def __str__(self):
         strong = ""
-        emojis = ["⬜ ","⬛ ","🟧 ","🟫 ", "🟡 ", "🟨 ", "🔴 ", "🟥 ", "🔵 ", "🟦 ", "🟢 ","🟩 ", "🟣 ","🟪 "]
-        bot_emoji = ["⬆️ ","⬅️ ","⬇️ ","➡️ "]
+        emojis = ["⬜","⬛","🟧","🟫", "🟡", "🟨", "🔴", "🟥", "🔵", "🟦", "🟢","🟩", "🟣","🟪"]
+        bot_emoji = ["⬆️","⬅️","⬇️","➡️"]
         for i in range(self.grid.rows):
             for j in range(self.grid.cols):
                 if i == self.i and j == self.j:
@@ -177,6 +241,12 @@ def count_bot_commands(code:str):
                 commands+=1
         elif "move_forward()" in i:
             if i.find("#") == -1 or i.find("#")>i.find("move_forward()"):
+                commands+=1
+        elif "move_backward()" in i:
+            if i.find("#") == -1 or i.find("#")>i.find("move_backward()"):
+                commands+=1
+        elif "can_move_back()" in i:
+            if i.find("#") == -1 or i.find("#")>i.find("can_move_back()"):
                 commands+=1
     return commands
 
