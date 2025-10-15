@@ -3,16 +3,15 @@
 Flask web application for the Bot Game
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
 from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption
 import grids
 import re
-import time
-import threading
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+app.secret_key = 'your-secret-key-here'  # Change this in production
 
 # Default level
 current_level = 1
@@ -204,9 +203,15 @@ def get_grid():
 
 @app.route('/levels')
 def get_levels():
-    """Get list of all available levels"""
+    """Get list of all available levels with progress icons"""
+    levels = grids.list_all_levels()
+    
+    # Add progress icons to each level
+    for level in levels:
+        level['icon'] = get_completion_icon(level['number'])
+    
     return jsonify({
-        'levels': grids.list_all_levels(),
+        'levels': levels,
         'total': len(grids.ALL_LEVELS)
     })
 
@@ -228,6 +233,143 @@ def get_level_details(level_number):
         })
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
+
+
+def init_session_progress():
+    """Initialize progress tracking in session if not exists"""
+    if 'progress' not in session:
+        session['progress'] = {}
+        session.modified = True
+
+def get_level_progress(level_number):
+    """Get progress for a specific level from session"""
+    init_session_progress()
+    level_key = str(level_number)
+    if level_key not in session['progress']:
+        session['progress'][level_key] = {
+            'completed': False,
+            'best_commands': None,
+            'attempts': 0,
+            'has_star': False
+        }
+        session.modified = True
+    return session['progress'][level_key]
+
+def save_level_progress(level_number, commands_used, par, completed):
+    """Save progress for a level"""
+    init_session_progress()
+    level_key = str(level_number)
+    progress = get_level_progress(level_number)
+    
+    progress['attempts'] += 1
+    
+    if completed:
+        progress['completed'] = True
+        
+        # Determine what type of completion this is
+        earned_star = commands_used <= par  # True for star, False for checkmark
+        
+        # Star/Checkmark logic:
+        # - Complete at or below par = star (⭐)
+        # - Complete above par = checkmark (✅)
+        # - Star can replace checkmark (upgrade)
+        # - Checkmark CANNOT replace star (no downgrade)
+        
+        if earned_star:
+            # Always set star if earned (replaces checkmark if present)
+            progress['has_star'] = True
+        else:
+            # Only set checkmark if we don't already have a star
+            if not progress.get('has_star', False):
+                progress['has_star'] = False
+        
+        # Update best score
+        if progress['best_commands'] is None or commands_used < progress['best_commands']:
+            progress['best_commands'] = commands_used
+    
+    session['progress'][level_key] = progress
+    session.modified = True
+    return progress
+
+def get_progress_stats():
+    """Get overall progress statistics"""
+    init_session_progress()
+    total_levels = len(grids.ALL_LEVELS)
+    total_stars = 0
+    levels_completed = 0
+    
+    for level_num in range(1, total_levels + 1):
+        progress = get_level_progress(level_num)
+        if progress.get('has_star', False):
+            total_stars += 1
+        if progress.get('completed', False):
+            levels_completed += 1
+    
+    return {
+        'total_stars': total_stars,
+        'levels_completed': levels_completed,
+        'total_levels': total_levels
+    }
+
+def get_completion_icon(level_number):
+    """Get completion icon for a level based on progress"""
+    progress = get_level_progress(level_number)
+    
+    if not progress.get('completed', False):
+        if progress.get('attempts', 0) > 0:
+            return "🔄"  # Attempted but not completed
+        else:
+            return "⚪"  # Not attempted
+    
+    # Binary system: star (par or better) or checkmark (over par)
+    # These are mutually exclusive - if has_star is True, show star; otherwise checkmark
+    if progress.get('has_star', False):
+        return "⭐"  # Completed at or under par
+    else:
+        return "✅"  # Completed over par
+
+@app.route('/progress/<int:level_number>')
+def get_progress_route(level_number):
+    """Get progress for a specific level"""
+    try:
+        progress = get_level_progress(level_number)
+        icon = get_completion_icon(level_number)
+        return jsonify({
+            'progress': progress,
+            'icon': icon,
+            'success': True
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/progress/stats')
+def progress_stats():
+    """Get overall progress statistics"""
+    try:
+        stats = get_progress_stats()
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/progress/save', methods=['POST'])
+def save_progress():
+    """Save progress for a level"""
+    try:
+        data = request.get_json()
+        level_number = data.get('level_number')
+        commands_used = data.get('commands_used', 0)
+        par = data.get('par', 999)
+        completed = data.get('completed', False)
+        
+        progress = save_level_progress(level_number, commands_used, par, completed)
+        
+        return jsonify({
+            'progress': progress,
+            'success': True
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

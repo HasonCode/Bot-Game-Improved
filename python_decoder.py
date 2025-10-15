@@ -106,16 +106,20 @@ class Bot:
         
     
     def can_move(self):
+        # Safety check: ensure bot position is valid
+        if not (0 <= self.i < self.grid.rows and 0 <= self.j < self.grid.cols):
+            return False
+            
         directions = ["up", "left", "down", "right"]
         dir = directions[self.direction]
         if dir == "up":
             if self.i > 0:
                 return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9]
         elif dir == "down":
-            if self.i < self.grid.rows:
+            if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
                 return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9]
         elif dir == "right":
-            if self.j < self.grid.cols:
+            if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
                 return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9]
         elif dir == "left":
             if self.j > 0:
@@ -142,9 +146,18 @@ class Bot:
         for i in range(self.grid.rows):
             for j in range(self.grid.cols):
                 if i == self.i and j == self.j:
-                    strong+=bot_emoji[self.direction]
+                    # Safety check for direction index
+                    if 0 <= self.direction < len(bot_emoji):
+                        strong+=bot_emoji[self.direction]
+                    else:
+                        strong+=emojis[0]  # Default emoji if direction is invalid
                 else:
-                    strong+=emojis[self.grid.get(i,j)]
+                    cell_value = self.grid.get(i,j)
+                    # Safety check for emoji index
+                    if 0 <= cell_value < len(emojis):
+                        strong+=emojis[cell_value]
+                    else:
+                        strong+=emojis[0]  # Default emoji if value is invalid
             strong+="\n"
         return strong
     

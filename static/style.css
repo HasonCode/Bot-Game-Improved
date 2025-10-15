@@ -34,6 +34,22 @@ header p {
     opacity: 0.9;
 }
 
+.progress-summary {
+    margin-top: 15px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.progress-summary span {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
 .level-selector {
     background: white;
     border-radius: 15px;
@@ -54,6 +70,18 @@ header p {
     font-size: 1.5rem;
     margin-bottom: 8px;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#level-completion-icon {
+    font-size: 1.2rem;
+}
+
+.level-stats {
+    background: #e3f2fd;
+    color: #1565c0;
 }
 
 .level-info p {

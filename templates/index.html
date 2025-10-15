@@ -11,15 +11,24 @@
         <header>
             <h1>🤖 Bot Game</h1>
             <p>Write Python code to guide your bot to the finish line!</p>
+            <div class="progress-summary">
+                <span id="total-stars">⭐ 0</span>
+                <span id="levels-completed">📊 0/8 Levels</span>
+            </div>
         </header>
 
         <div class="level-selector">
             <div class="level-info">
-                <h2 id="level-title">Level 1: Loading...</h2>
+                <h2 id="level-title">
+                    <span id="level-completion-icon"></span>
+                    Level 1: Loading...
+                </h2>
                 <p id="level-description">Loading level...</p>
                 <div class="level-meta">
                     <span id="level-difficulty" class="badge">Easy</span>
                     <span id="level-size" class="badge">5x5</span>
+                    <span id="level-best" class="badge level-stats" style="display:none;">🏆 Best: 0</span>
+                    <span id="level-attempts" class="badge level-stats" style="display:none;">🎯 Attempts: 0</span>
                 </div>
             </div>
             <div class="level-controls">
@@ -116,18 +125,21 @@ while True:
                 const data = await response.json();
                 allLevels = data.levels;
                 
-                // Populate level dropdown
+                // Populate level dropdown with completion icons
                 const dropdown = document.getElementById('level-select');
                 dropdown.innerHTML = '';
-                allLevels.forEach(level => {
+                for (const level of allLevels) {
                     const option = document.createElement('option');
                     option.value = level.number;
-                    option.textContent = `Level ${level.number}: ${level.name}`;
+                    option.textContent = `${level.icon} Level ${level.number}: ${level.name}`;
                     dropdown.appendChild(option);
-                });
+                }
+                
+                // Update progress summary
+                await updateProgressSummary();
                 
                 // Load the first level
-                loadGrid(1);
+                await loadGrid(1);
             } catch (error) {
                 addOutput('Error loading levels: ' + error.message, 'error');
             }
@@ -148,26 +160,118 @@ while True:
                 }
                 
                 // Update grid display
-                document.getElementById('grid-display').textContent = data.grid_state;
-                document.getElementById('max-commands').textContent = `Par: ${data.max_commands} commands`;
+                const gridDisplayElement = document.getElementById('grid-display');
+                if (gridDisplayElement) {
+                    gridDisplayElement.textContent = data.grid_state;
+                }
+                
+                const maxCommandsElement = document.getElementById('max-commands');
+                if (maxCommandsElement) {
+                    maxCommandsElement.textContent = `Par: ${data.max_commands} commands`;
+                }
                 
                 // Update level info
                 const levelInfo = data.level_info;
-                document.getElementById('level-title').textContent = `Level ${levelInfo.number}: ${levelInfo.name}`;
-                document.getElementById('level-description').textContent = levelInfo.description;
-                document.getElementById('level-difficulty').textContent = levelInfo.difficulty;
-                document.getElementById('level-difficulty').className = `badge difficulty-${levelInfo.difficulty.toLowerCase()}`;
-                document.getElementById('level-size').textContent = levelInfo.size;
+                const levelTitleElement = document.getElementById('level-title');
+                if (levelTitleElement) {
+                    levelTitleElement.textContent = `Level ${levelInfo.number}: ${levelInfo.name}`;
+                }
+                
+                const levelDescriptionElement = document.getElementById('level-description');
+                if (levelDescriptionElement) {
+                    levelDescriptionElement.textContent = levelInfo.description;
+                }
+                
+                const levelDifficultyElement = document.getElementById('level-difficulty');
+                if (levelDifficultyElement) {
+                    levelDifficultyElement.textContent = levelInfo.difficulty;
+                    levelDifficultyElement.className = `badge difficulty-${levelInfo.difficulty.toLowerCase()}`;
+                }
+                
+                const levelSizeElement = document.getElementById('level-size');
+                if (levelSizeElement) {
+                    levelSizeElement.textContent = levelInfo.size;
+                }
                 
                 // Update dropdown
-                document.getElementById('level-select').value = currentLevel;
+                const levelSelectElement = document.getElementById('level-select');
+                if (levelSelectElement) {
+                    levelSelectElement.value = currentLevel;
+                }
                 
                 // Update navigation buttons
-                document.getElementById('prev-level').disabled = currentLevel === 1;
-                document.getElementById('next-level').disabled = currentLevel === allLevels.length;
+                const prevLevelElement = document.getElementById('prev-level');
+                if (prevLevelElement) {
+                    prevLevelElement.disabled = currentLevel === 1;
+                }
+                
+                const nextLevelElement = document.getElementById('next-level');
+                if (nextLevelElement) {
+                    nextLevelElement.disabled = currentLevel === allLevels.length;
+                }
+                
+                // Update level progress display
+                await updateLevelProgress(currentLevel);
                 
             } catch (error) {
                 addOutput('Error loading grid: ' + error.message, 'error');
+            }
+        }
+
+        async function updateProgressSummary() {
+            try {
+                const response = await fetch('/progress/stats');
+                const stats = await response.json();
+                const totalStarsElement = document.getElementById('total-stars');
+                const levelsCompletedElement = document.getElementById('levels-completed');
+                
+                if (totalStarsElement) {
+                    totalStarsElement.textContent = `⭐ ${stats.total_stars}`;
+                }
+                if (levelsCompletedElement) {
+                    levelsCompletedElement.textContent = `📊 ${stats.levels_completed}/${stats.total_levels} Levels`;
+                }
+            } catch (error) {
+                console.error('Failed to update progress summary:', error);
+            }
+        }
+
+        async function updateLevelProgress(levelNumber) {
+            try {
+                const response = await fetch(`/progress/${levelNumber}`);
+                const data = await response.json();
+                const progress = data.progress;
+                const icon = data.icon;
+                
+                // Update completion icon
+                const completionIcon = document.getElementById('level-completion-icon');
+                if (completionIcon) {
+                    completionIcon.textContent = icon;
+                }
+                
+                // Update stats if level has been attempted
+                const levelBest = document.getElementById('level-best');
+                const levelAttempts = document.getElementById('level-attempts');
+                
+                if (progress.attempts > 0) {
+                    if (levelBest) {
+                        levelBest.style.display = 'inline-block';
+                        levelBest.textContent = `🏆 Best: ${progress.best_commands || 'N/A'}`;
+                    }
+                    if (levelAttempts) {
+                        levelAttempts.style.display = 'inline-block';
+                        levelAttempts.textContent = `🎯 Attempts: ${progress.attempts}`;
+                    }
+                } else {
+                    if (levelBest) {
+                        levelBest.style.display = 'none';
+                    }
+                    if (levelAttempts) {
+                        levelAttempts.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to update level progress:', error);
             }
         }
 
@@ -179,7 +283,10 @@ while True:
                 const frame = frames[i];
                 
                 // Update grid display
-                document.getElementById('grid-display').textContent = frame.grid_state;
+                const gridDisplayElement = document.getElementById('grid-display');
+                if (gridDisplayElement) {
+                    gridDisplayElement.textContent = frame.grid_state;
+                }
                 
                 // Show current action
                 if (i > 0) {  // Skip initial state
@@ -187,15 +294,18 @@ while True:
                 }
                 
                 // Update bot status during animation
-                if (frame.win_state) {
-                    document.getElementById('bot-status').textContent = 'Bot Status: 🏆 VICTORY!';
-                    document.getElementById('bot-status').className = 'success';
-                } else if (!frame.alive) {
-                    document.getElementById('bot-status').textContent = 'Bot Status: 💀 DEAD';
-                    document.getElementById('bot-status').className = 'error';
-                } else {
-                    document.getElementById('bot-status').textContent = 'Bot Status: 🏃 RUNNING';
-                    document.getElementById('bot-status').className = '';
+                const botStatusElement = document.getElementById('bot-status');
+                if (botStatusElement) {
+                    if (frame.win_state) {
+                        botStatusElement.textContent = 'Bot Status: 🏆 VICTORY!';
+                        botStatusElement.className = 'success';
+                    } else if (!frame.alive) {
+                        botStatusElement.textContent = 'Bot Status: 💀 DEAD';
+                        botStatusElement.className = 'error';
+                    } else {
+                        botStatusElement.textContent = 'Bot Status: 🏃 RUNNING';
+                        botStatusElement.className = '';
+                    }
                 }
                 
                 // Wait for the delay before showing next frame (but always show the last frame)
@@ -216,8 +326,17 @@ while True:
             
             isLoading = true;
             const runButton = document.getElementById('run-code');
-            const code = document.getElementById('code-input').value;
-            const delay = parseFloat(document.getElementById('delay-slider').value);
+            const codeInput = document.getElementById('code-input');
+            const delaySlider = document.getElementById('delay-slider');
+            
+            if (!codeInput || !delaySlider) {
+                addOutput('Error: Required UI elements not found', 'error');
+                isLoading = false;
+                return;
+            }
+            
+            const code = codeInput.value;
+            const delay = parseFloat(delaySlider.value);
             
             if (!code.trim()) {
                 addOutput('Please enter some code to execute', 'error');
@@ -225,8 +344,11 @@ while True:
                 return;
             }
 
-            runButton.disabled = true;
-            runButton.textContent = '⏳ Running...';
+            if (runButton) {
+                runButton.disabled = true;
+                runButton.textContent = '⏳ Running...';
+            }
+            
             clearOutput();
             addOutput(`Executing code with ${delay}s delay between frames...`);
 
@@ -261,53 +383,137 @@ while True:
                     addOutput(`Total commands used: ${result.command_count}`);
                     
                     // Update final status based on result (takes precedence over frame data)
-                    document.getElementById('command-count').textContent = `Commands Used: ${result.command_count}`;
+                    const commandCountElement = document.getElementById('command-count');
+                    if (commandCountElement) {
+                        commandCountElement.textContent = `Commands Used: ${result.command_count}`;
+                    }
                     
                     // Ensure the final grid state is displayed
                     if (result.grid_state) {
-                        document.getElementById('grid-display').textContent = result.grid_state;
+                        const gridDisplayElement = document.getElementById('grid-display');
+                        if (gridDisplayElement) {
+                            gridDisplayElement.textContent = result.grid_state;
+                        }
                     }
+                    
+                    // Record progress
+                    const currentLevelInfo = allLevels.find(l => l.number === currentLevel);
+                    const par = currentLevelInfo ? currentLevelInfo.par : 999;
+                    
+                    const progressResponse = await fetch('/progress/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            level_number: currentLevel,
+                            commands_used: result.command_count,
+                            par: par,
+                            completed: result.win_state
+                        })
+                    });
+                    const levelProgress = await progressResponse.json();
                     
                     // Update status - use result data which is authoritative
                     if (result.win_state) {
-                        document.getElementById('bot-status').textContent = 'Bot Status: 🏆 VICTORY!';
-                        document.getElementById('bot-status').className = 'success';
+                        const botStatusElement = document.getElementById('bot-status');
+                        if (botStatusElement) {
+                            botStatusElement.textContent = 'Bot Status: 🏆 VICTORY!';
+                            botStatusElement.className = 'success';
+                        }
+                        
+                        // Show completion message
+                        const progressData = levelProgress.progress || levelProgress;
+                        const starMessage = progressData.has_star ? '⭐ Perfect! Completed at or under par!' : '✅ Completed!';
+                        addOutput(starMessage, 'success');
+                        
+                        // Update progress displays
+                        await updateProgressSummary();
+                        await updateLevelProgress(currentLevel);
+                        
+                        // Refresh dropdown to show updated icons
+                        const levelsResponse = await fetch('/levels');
+                        const levelsData = await levelsResponse.json();
+                        allLevels = levelsData.levels;
+                        
+                        const dropdown = document.getElementById('level-select');
+                        if (dropdown) {
+                            const currentValue = dropdown.value;
+                            dropdown.innerHTML = '';
+                            for (const level of allLevels) {
+                                const option = document.createElement('option');
+                                option.value = level.number;
+                                option.textContent = `${level.icon} Level ${level.number}: ${level.name}`;
+                                dropdown.appendChild(option);
+                            }
+                            dropdown.value = currentValue;
+                        }
+                        
                     } else if (!result.alive) {
-                        document.getElementById('bot-status').textContent = 'Bot Status: 💀 DEAD';
-                        document.getElementById('bot-status').className = 'error';
+                        const botStatusElement = document.getElementById('bot-status');
+                        if (botStatusElement) {
+                            botStatusElement.textContent = 'Bot Status: 💀 DEAD';
+                            botStatusElement.className = 'error';
+                        }
+                        updateLevelProgress(currentLevel);
                     } else {
-                        document.getElementById('bot-status').textContent = 'Bot Status: ✅ COMPLETED';
-                        document.getElementById('bot-status').className = '';
+                        const botStatusElement = document.getElementById('bot-status');
+                        if (botStatusElement) {
+                            botStatusElement.textContent = 'Bot Status: ✅ COMPLETED';
+                            botStatusElement.className = '';
+                        }
+                        updateLevelProgress(currentLevel);
                     }
                 } else {
                     addOutput('❌ ' + result.error, 'error');
-                    document.getElementById('bot-status').textContent = 'Bot Status: ❌ ERROR';
-                    document.getElementById('bot-status').className = 'error';
+                    const botStatusElement = document.getElementById('bot-status');
+                    if (botStatusElement) {
+                        botStatusElement.textContent = 'Bot Status: ❌ ERROR';
+                        botStatusElement.className = 'error';
+                    }
                 }
 
             } catch (error) {
                 addOutput('Network error: ' + error.message, 'error');
-                document.getElementById('bot-status').textContent = 'Bot Status: ❌ CONNECTION ERROR';
-                document.getElementById('bot-status').className = 'error';
+                const botStatusElement = document.getElementById('bot-status');
+                if (botStatusElement) {
+                    botStatusElement.textContent = 'Bot Status: ❌ CONNECTION ERROR';
+                    botStatusElement.className = 'error';
+                }
             }
 
-            runButton.disabled = false;
-            runButton.textContent = '🚀 Run Code';
+            if (runButton) {
+                runButton.disabled = false;
+                runButton.textContent = '🚀 Run Code';
+            }
             isLoading = false;
         }
 
-        function resetGrid() {
-            document.getElementById('bot-status').textContent = 'Bot Status: Ready';
-            document.getElementById('bot-status').className = '';
-            document.getElementById('command-count').textContent = 'Commands Used: 0';
-            document.getElementById('command-count').className = '';
-            loadGrid();
+        async function resetGrid() {
+            const botStatusElement = document.getElementById('bot-status');
+            if (botStatusElement) {
+                botStatusElement.textContent = 'Bot Status: Ready';
+                botStatusElement.className = '';
+            }
+            
+            const commandCountElement = document.getElementById('command-count');
+            if (commandCountElement) {
+                commandCountElement.textContent = 'Commands Used: 0';
+                commandCountElement.className = '';
+            }
+            
+            await loadGrid();
             clearOutput();
             addOutput('Grid reset to starting position');
         }
 
         function addOutput(message, type = 'normal') {
             const output = document.getElementById('output');
+            if (!output) {
+                console.warn('Output element not found');
+                return;
+            }
+            
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
             
@@ -316,35 +522,54 @@ while True:
         }
 
         function clearOutput() {
-            document.getElementById('output').innerHTML = '';
+            const output = document.getElementById('output');
+            if (output) {
+                output.innerHTML = '';
+            }
         }
 
-        // Event listeners
-        document.getElementById('run-code').addEventListener('click', executeCode);
-        document.getElementById('reset-grid').addEventListener('click', resetGrid);
+        // Event listeners with null checks
+        const runCodeElement = document.getElementById('run-code');
+        if (runCodeElement) {
+            runCodeElement.addEventListener('click', executeCode);
+        }
+        
+        const resetGridElement = document.getElementById('reset-grid');
+        if (resetGridElement) {
+            resetGridElement.addEventListener('click', resetGrid);
+        }
         
         // Level navigation
-        document.getElementById('prev-level').addEventListener('click', function() {
-            if (currentLevel > 1) {
-                loadGrid(currentLevel - 1);
+        const prevLevelElement = document.getElementById('prev-level');
+        if (prevLevelElement) {
+            prevLevelElement.addEventListener('click', async function() {
+                if (currentLevel > 1) {
+                    await loadGrid(currentLevel - 1);
+                    clearOutput();
+                    addOutput(`Loaded Level ${currentLevel}`);
+                }
+            });
+        }
+        
+        const nextLevelElement = document.getElementById('next-level');
+        if (nextLevelElement) {
+            nextLevelElement.addEventListener('click', async function() {
+                if (currentLevel < allLevels.length) {
+                    await loadGrid(currentLevel + 1);
+                    clearOutput();
+                    addOutput(`Loaded Level ${currentLevel}`);
+                }
+            });
+        }
+        
+        const levelSelectElement = document.getElementById('level-select');
+        if (levelSelectElement) {
+            levelSelectElement.addEventListener('change', async function() {
+                await loadGrid(parseInt(this.value));
                 clearOutput();
                 addOutput(`Loaded Level ${currentLevel}`);
-            }
-        });
-        
-        document.getElementById('next-level').addEventListener('click', function() {
-            if (currentLevel < allLevels.length) {
-                loadGrid(currentLevel + 1);
-                clearOutput();
-                addOutput(`Loaded Level ${currentLevel}`);
-            }
-        });
-        
-        document.getElementById('level-select').addEventListener('change', function() {
-            loadGrid(parseInt(this.value));
-            clearOutput();
-            addOutput(`Loaded Level ${currentLevel}`);
-        });
+            });
+        }
 
         // Keyboard shortcut
         document.addEventListener('keydown', function(e) {
