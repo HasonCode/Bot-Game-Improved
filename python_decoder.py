@@ -19,12 +19,14 @@ class Grid:
         self.start_pos = start_pos
         self.rows = len(data)
         self.cols = len(data[0])
-        self.data = data
-        self.data_copy = []
-        for i in range(len(data)):
-            self.data_copy.append([])
-            for j in range(len(data[i])):
-                self.data_copy[i].append(data[i][j])
+        
+        # Create a deep copy of data to avoid modifying the original level data
+        self.data = [[data[i][j] for j in range(len(data[0]))] for i in range(len(data))]
+
+        
+        # Create a backup copy for reset functionality
+        self.data_copy = [[data[i][j] for j in range(len(data[0]))] for i in range(len(data))]
+        
         self.start_direction = start_dir
         self.par = par
     def get(self, row, col):
