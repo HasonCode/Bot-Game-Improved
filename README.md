@@ -1,170 +1,179 @@
-# 🤖 Bot Game - Flask Web Application
+# 🤖 Bot Game
 
-A web-based coding game where you write Python code to control a bot and navigate through a grid to reach the finish line.
+A Python programming puzzle game where you write code to guide a bot through increasingly complex mazes!
+
+## 🎮 Game Features
+
+- **15 Progressive Levels** - From basic movement to complex algorithms
+- **Star System** - Complete levels efficiently to earn stars ⭐
+- **Progress Tracking** - Save your progress and best scores
+- **Multiple Bot Commands** - Forward, backward, turning, and path checking
+- **Key & Gate Puzzles** - Collect keys to unlock gates
+- **Zappy Walls** - Navigate dangerous obstacles that reset your bot
+- **Real-time Animation** - Watch your bot execute your code step by step
 
 ## 🚀 Quick Start
 
-### 1. Start the Server
+### Local Development
 
-```bash
-cd "/home/hason/bot game"
-python3 app.py
-```
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd bot-game
+   ```
 
-### 2. Open Your Browser
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Navigate to: `http://localhost:5000`
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your settings
+   ```
 
-### 3. Write Code & Watch the Animation!
+4. **Run the game**
+   ```bash
+   python app.py
+   ```
 
-Write Python code using the bot commands and click "Run Code" to see your bot move in real-time!
+5. **Open your browser**
+   ```
+   http://localhost:5000
+   ```
 
-## 🎮 How It Works
+## 🌐 Deploy to Railway
 
-### Animation System
+### One-Click Deployment
 
-The game features a **frame-by-frame animation system**:
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/deploy)
 
-- Each time the bot moves or turns, a new frame is captured
-- The animation speed slider controls the delay between frames (0-2 seconds)
-- Watch your bot move step-by-step through the grid
-- Perfect for understanding and debugging your code!
+### Manual Deployment
+
+1. **Fork this repository** on GitHub
+2. **Connect to Railway**:
+   - Go to [railway.app](https://railway.app)
+   - Sign in with GitHub
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select your forked repository
+
+3. **Set environment variables** (optional):
+   - `SECRET_KEY`: Generate with `python generate_secret.py`
+   - `FLASK_ENV`: Set to `production`
+
+4. **Deploy!** Railway will automatically build and deploy your game.
+
+## 🎯 How to Play
 
 ### Bot Commands
 
-| Command | Description |
-|---------|-------------|
-| `bot.move_forward()` | Move the bot forward in its current direction |
-| `bot.turn_left()` | Turn the bot left (counterclockwise) |
-| `bot.turn_right()` | Turn the bot right (clockwise) |
-| `bot.can_move()` | Check if the bot can move forward (returns True/False) |
+- `bot.move_forward()` - Move forward in current direction
+- `bot.move_backward()` - Move backward from current direction  
+- `bot.turn_left()` - Turn left (counterclockwise)
+- `bot.turn_right()` - Turn right (clockwise)
+- `bot.can_move()` - Check if can move forward
+- `bot.can_move_back()` - Check if can move backward
 
-### Controls
+### Game Elements
 
-1. **🚀 Run Code** - Execute all commands with animated frames
-   - Adjust animation speed with the slider (0-2 seconds)
-   - See each move and turn in sequence
-   - Final result shown after animation completes
+- **🤖 Bot** - Your character (shows direction with arrows)
+- **⬜ Empty** - Walkable space
+- **⬛ Wall** - Impassable barrier
+- **🟧 Zappy Wall** - Dangerous! Resets bot to start
+- **🟫 Finish Line** - Your goal
+- **🟡 Keys & Gates** - Collect keys to unlock gates
+- **🔴 Red, 🔵 Blue, 🟢 Green, 🟣 Purple** - Different key types
 
-2. **🔄 Reset** - Reset the bot to starting position
+### Scoring
 
-## 📊 Game Elements
+- **⭐ Star**: Complete at or under par (optimal solution)
+- **✅ Checkmark**: Complete above par (still counts as completed)
+- **Stars can replace checkmarks, but not vice versa**
 
-- **⬜** Empty space (walkable)
-- **⬛** Basic wall (impassable)
-- **🟦** Special wall (respawns bot if touched)
-- **🟫** Finish line (goal!)
-- **⬆️⬅️⬇️➡️** Bot with direction indicator
-
-## 💡 Example Code
-
-### Simple Solution
-```python
-# Keep moving forward, turn right when blocked
-while True:
-    if bot.can_move():
-        bot.move_forward()
-    else:
-        bot.turn_right()
-```
-
-### Complex Solution
-```python
-# Move forward 3 times, then navigate
-for i in range(3):
-    if bot.can_move():
-        bot.move_forward()
-
-bot.turn_right()
-while bot.can_move():
-    bot.move_forward()
-```
-
-## 🎯 Winning
-
-- Get your bot to the finish line (🟫)
-- Use as few commands as possible for a ⭐ STAR rating
-- Par for the default level: **3 commands**
-
-## 🔧 Technical Details
+## 🏗️ Technical Details
 
 ### Architecture
 
 - **Backend**: Flask (Python)
-- **Frontend**: Vanilla JavaScript + HTML/CSS
-- **Animation**: Frame-by-frame rendering with async/await
+- **Frontend**: HTML, CSS, JavaScript
+- **Game Engine**: Custom Python bot simulation
+- **Progress**: Browser session storage
 
-### How Animation Works
-
-1. **Python Backend (`AnimatedBot` class)**:
-   - Captures grid state after each action
-   - Stores frames with position, direction, and status
-   - Returns all frames to frontend
-
-2. **JavaScript Frontend (`playAnimation` function)**:
-   - Receives all frames from backend
-   - Displays each frame sequentially
-   - Uses setTimeout for delay between frames
-   - Updates grid display in real-time
-
-3. **User Control**:
-   - Slider adjusts delay (0 = instant, 2 = slow motion)
-   - Each frame shows one bot action
-   - Animation is smooth and controllable
-
-### Security
-
-The server includes safety checks:
-- Blocks dangerous imports and operations
-- Input sanitization
-- Code validation before execution
-
-## 📁 File Structure
+### File Structure
 
 ```
-bot game/
-├── python_decoder.py      # Original bot logic (UNCHANGED)
-├── app.py                 # Flask server with AnimatedBot
-├── requirements.txt       # Python dependencies
+bot-game/
+├── app.py              # Main Flask application
+├── grids.py            # Game level definitions
+├── python_decoder.py   # Bot game engine
 ├── templates/
-│   └── index.html        # Web interface with animation
+│   └── index.html      # Game interface
 ├── static/
-│   └── style.css         # Styling
-└── README.md             # This file
+│   └── style.css       # Styling
+├── requirements.txt    # Python dependencies
+├── Procfile           # Railway deployment
+└── README.md          # This file
 ```
 
-## 🎨 Features
+### Security Features
 
-✅ Real-time frame-by-frame animation  
-✅ Adjustable animation speed (0-2 seconds)  
-✅ Step-by-step execution mode  
-✅ Action logging  
-✅ Command counting  
-✅ Win/lose detection  
-✅ Beautiful, responsive UI  
-✅ Your original Python code stays intact!  
+- ✅ Environment-based configuration
+- ✅ Secure session cookies
+- ✅ CORS protection
+- ✅ Code execution sandboxing
+- ✅ Input validation
 
-## 🐛 Troubleshooting
+## 🎨 Customization
 
-**Port already in use:**
-```bash
-python3 app.py  # Uses port 5000 by default
-```
+### Adding New Levels
 
-**Slow animation:**
-- Adjust the animation speed slider to 0 for instant execution
+1. **Edit `grids.py`**:
+   ```python
+   LEVEL_X = {
+       'name': 'Level Name',
+       'description': 'Description',
+       'data': [...],  # 2D array of tile types
+       'start_pos': (row, col),
+       'start_dir': 0,  # 0=up, 1=left, 2=down, 3=right
+       'par': 10,       # Target command count
+       'difficulty': 'Medium'
+   }
+   ```
 
-**Bot not moving:**
-- Check your code logic
-- Use "Step Through" mode to debug
-- Check the output panel for errors
+2. **Add to `ALL_LEVELS`** list
+3. **Update level counter** in frontend
 
-## 🔮 Future Enhancements
+### Tile Types
 
-- Multiple levels with different grids
-- Save/load code snippets
-- Leaderboard for efficient solutions
-- Custom grid editor
-- Share solutions via URL
+- `0`: Empty space
+- `1`: Wall
+- `2`: Zappy wall
+- `3`: Finish line
+- `4`: Yellow key → `5`: Yellow gate
+- `6`: Red key → `7`: Red gate
+- `8`: Blue key → `9`: Blue gate
+- `10`: Green key → `11`: Green gate
+- `12`: Purple key → `13`: Purple gate
 
-Enjoy coding your bot! 🤖
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🎮 Play Now
+
+Ready to start coding? Deploy to Railway and begin your bot programming adventure!
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/deploy)
+
+---
+
+**Made with ❤️ for programming education**

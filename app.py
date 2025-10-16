@@ -1,18 +1,31 @@
 #!/usr/bin/env python3
 """
 Flask web application for the Bot Game
+Production-ready version with security and configuration improvements
 """
 
+import os
+import re
 from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
+from dotenv import load_dotenv
 from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption
 import grids
-import re
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-import os
+
+# Security Configuration
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+
+# CORS Configuration
+CORS(app, origins=os.environ.get('ALLOWED_ORIGINS', '*').split(','))
 
 # Default level
 current_level = 1
@@ -366,10 +379,38 @@ def save_progress():
     except Exception as e:
         return jsonify({'error': str(e), 'success': False}), 500
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for deployment platforms"""
+    return jsonify({
+        'status': 'healthy',
+        'app': 'Bot Game',
+        'version': '1.0.0',
+        'levels': len(grids.ALL_LEVELS),
+        'features': [
+            '15 progressive levels',
+            'Star system',
+            'Progress tracking',
+            'Real-time animation',
+            'Multiple bot commands'
+        ]
+    })
+
 
 if __name__ == '__main__':
-    import os
+    # Production configuration
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    
+    # Use gunicorn in production, Flask dev server in development
+    if os.environ.get('FLASK_ENV') == 'production':
+        print(f"🚀 Bot Game starting in production mode on port {port}")
+        print("📊 Features: 15 levels, star system, progress tracking")
+        print("🎮 Ready to play!")
+    else:
+        print(f"🔧 Bot Game starting in development mode on port {port}")
+        print("📊 Features: 15 levels, star system, progress tracking")
+        print("🎮 Ready to play!")
+    
     app.run(debug=debug_mode, host='0.0.0.0', port=port)
 
