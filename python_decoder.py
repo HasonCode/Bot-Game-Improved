@@ -20,11 +20,21 @@ class Grid:
         self.rows = len(data)
         self.cols = len(data[0])
         self.data = data
+        self.data_copy = []
+        for i in range(len(data)):
+            self.data_copy.append([])
+            for j in range(len(data[i])):
+                self.data_copy[i].append(data[i][j])
         self.start_direction = start_dir
         self.par = par
     def get(self, row, col):
         return self.data[row][col]
-    
+    def reset(self):
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                self.data[i][j] = self.data_copy[i][j]
+
+        
 
 class Bot:
     def __init__(self, grid:Grid):
@@ -36,7 +46,7 @@ class Bot:
         self.j = grid.start_pos[1]
         self.alive = True
         self.moves = 0
-        self.moves_limit = 1000
+        self.moves_limit = 10000
 
         
     def move_backward(self):
@@ -202,6 +212,7 @@ class Bot:
         self.i = self.start[0]
         self.j = self.start[1]
         self.alive = False
+        self.grid.reset()
     
     def __str__(self):
         strong = ""
@@ -256,7 +267,7 @@ def interpreter(code:str, grid):
     lines = code.split("\n")
     code_arr = []
     for line in lines:
-        if "import" in line and "math" not in line:
+        if "import" in line:
             pass
         else:
             code_arr.append(line)

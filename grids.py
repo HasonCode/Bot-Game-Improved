@@ -54,7 +54,7 @@ LEVEL_12 = {
     ],
     'start_pos': (1,1),
     'start_dir': 3,  # Facing right
-    'par': 8,
+    'par': 4,
     'difficulty': 'Easy'
 }
 
@@ -107,7 +107,7 @@ LEVEL_4 = {
         [0,0,0,1,1,1,1],  # Row 4: wall, empty, wall, empty, wall, empty, wall
         [0,1,1,1,1,1,1]   # Row 5: empty (bot start), wall, empty path, wall
     ],
-    'start_pos': (6,0),
+    'start_pos': (5,0),
     'start_dir': 3,  # Facing right
     'par': 12,
     'difficulty': 'Medium'
@@ -153,7 +153,7 @@ LEVEL_6 = {
     ],
     'start_pos': (9,1),
     'start_dir': 0,
-    'par': 8,
+    'par': 6,
     'difficulty': 'Medium'
 }
 
@@ -201,13 +201,13 @@ LEVEL_9 = {
     'description': 'Navigate through multiple locked gates',
     'data': [
         [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,5,0,0,0,7,0,1],
+        [1,0,0,0,0,0,0,0,7,0,1],
         [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,1,4,1,0,1,0,1,0,1],
-        [1,0,1,1,1,0,1,0,1,3,1],
-        [1,0,0,0,0,5,1,0,0,0,1],
+        [1,0,1,4,1,0,1,0,1,3,1],
+        [1,0,1,1,1,0,1,0,1,1,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
         [1,0,1,1,1,1,1,0,1,1,1],
-        [1,4,0,0,0,0,5,0,0,6,1],
+        [1,0,0,0,0,0,0,0,5,6,1],
         [1,1,1,1,1,1,1,1,1,1,1]
     ],
     'start_pos': (7,1),
