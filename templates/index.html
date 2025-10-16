@@ -466,7 +466,21 @@ while True:
             }
             
             clearOutput();
-            addOutput(`Executing code with ${delay}s delay between frames...`);
+            
+            // Ensure fresh grid with all keys and gates restored before execution
+            try {
+                await loadGrid(currentLevel);
+                addOutput('✨ Grid refreshed - all keys and gates restored');
+                addOutput(`Executing code with ${delay}s delay between frames...`);
+            } catch (error) {
+                addOutput('Error refreshing grid: ' + error.message, 'error');
+                isLoading = false;
+                if (runButton) {
+                    runButton.disabled = false;
+                    runButton.textContent = '🚀 Run Code';
+                }
+                return;
+            }
 
             try {
                 const response = await fetch('/execute', {
@@ -630,9 +644,12 @@ while True:
                 commandCountElement.className = '';
             }
             
-            await loadGrid();
             clearOutput();
-            addOutput('Grid reset to starting position - all keys and gates restored');
+            addOutput('🔄 Resetting grid...');
+            addOutput('✨ Restoring all keys and gates to original positions');
+            
+            await loadGrid();
+            addOutput('✅ Grid reset complete - ready for new attempt');
         }
 
         function addOutput(message, type = 'normal') {
