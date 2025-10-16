@@ -30,6 +30,7 @@ class Grid:
     def get(self, row, col):
         return self.data[row][col]
     def reset(self):
+        """Restore grid to original state - all keys and gates are regenerated"""
         for i in range(len(self.data)):
             for j in range(len(self.data[i])):
                 self.data[i][j] = self.data_copy[i][j]
@@ -216,7 +217,7 @@ class Bot:
         self.alive = True
         self.win_state = False
         self.moves = 0
-        self.grid.reset()  # This restores all keys and gates
+        self.grid.reset()  # This restores all keys and gates from data_copy
     
     def __str__(self):
         strong = ""
