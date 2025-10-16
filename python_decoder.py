@@ -168,16 +168,16 @@ class Bot:
         dir = directions[self.direction]
         if dir == "down":
             if self.i > 0:
-                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "up":
             if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
-                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "left":
             if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
-                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "right":
             if self.j > 0:
-                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9, 11, 13]
         return False
     def can_move(self):
         # Safety check: ensure bot position is valid
@@ -188,16 +188,16 @@ class Bot:
         dir = directions[self.direction]
         if dir == "up":
             if self.i > 0:
-                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "down":
             if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
-                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "right":
             if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
-                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9, 11, 13]
         elif dir == "left":
             if self.j > 0:
-                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9]
+                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9, 11, 13]
         return False
 
     def check_win(self):
