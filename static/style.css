@@ -393,5 +393,176 @@ header p {
         min-width: auto;
         width: 100%;
     }
+    
+    .welcome-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .welcome-actions {
+        flex-direction: column;
+    }
+}
+
+/* Welcome Modal */
+.welcome-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.welcome-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.4s ease-out;
+}
+
+.welcome-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.welcome-header h2 {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.welcome-body {
+    padding: 25px;
+    color: white;
+}
+
+.welcome-body p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.welcome-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid #4CAF50;
+}
+
+.welcome-instructions p {
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    color: #f0f0f0;
+}
+
+.welcome-body ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 25px;
+}
+
+.welcome-body li {
+    padding: 8px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-body li:last-child {
+    border-bottom: none;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.welcome-actions .btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.welcome-actions .btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.welcome-actions .btn-primary:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.welcome-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.welcome-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 

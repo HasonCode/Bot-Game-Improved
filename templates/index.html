@@ -7,13 +7,33 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="welcome-modal" style="display: none;">
+        <div class="welcome-content">
+            <div class="welcome-header">
+                <h2>🎮 Welcome to Bot Game!</h2>
+                <button id="close-welcome" class="close-btn">&times;</button>
+            </div>
+            <div class="welcome-body">
+                <p><strong>Welcome to the Bot Game portion of the BAPFT!</strong></p>
+                <div class="welcome-instructions">
+                    <p>Here, you will be tasked with solving robot puzzles. Solutions exceeding the par for a given level will receive no more than half credit. Please take screenshots of your solution with either the check or the star and your code, storing them in a document.</p>
+                </div>
+                <div class="welcome-actions">
+                    <button id="start-playing" class="btn btn-primary">Begin Test</button>
+                    <button id="skip-intro" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>🤖 Bot Game</h1>
             <p>Write Python code to guide your bot to the finish line!</p>
             <div class="progress-summary">
                 <span id="total-stars">⭐ 0</span>
-                <span id="levels-completed">📊 0/16 Levels</span>
+                <span id="levels-completed">📊 0/15 Levels</span>
             </div>
         </header>
 
@@ -113,6 +133,7 @@ while True:
             loadLevels();
             setupDelaySlider();
             setupTabSupport();
+            setupWelcomeModal();
         });
 
         function setupDelaySlider() {
@@ -144,6 +165,75 @@ while True:
                     this.selectionStart = this.selectionEnd = start + tab.length;
                 }
             });
+        }
+
+        function setupWelcomeModal() {
+            // Check if user has seen welcome before
+            const hasSeenWelcome = localStorage.getItem('botGameWelcomeSeen');
+            
+            if (!hasSeenWelcome) {
+                // Show welcome modal after a short delay
+                setTimeout(() => {
+                    const modal = document.getElementById('welcome-modal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                    }
+                }, 500);
+            }
+            
+            // Close button
+            const closeBtn = document.getElementById('close-welcome');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeWelcomeModal);
+            }
+            
+            // Start playing button
+            const startBtn = document.getElementById('start-playing');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    closeWelcomeModal();
+                    // Focus on code input
+                    const codeInput = document.getElementById('code-input');
+                    if (codeInput) {
+                        codeInput.focus();
+                    }
+                });
+            }
+            
+            // Skip intro button
+            const skipBtn = document.getElementById('skip-intro');
+            if (skipBtn) {
+                skipBtn.addEventListener('click', closeWelcomeModal);
+            }
+            
+            // Close on background click
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeWelcomeModal();
+                    }
+                });
+            }
+            
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('welcome-modal');
+                    if (modal && modal.style.display === 'flex') {
+                        closeWelcomeModal();
+                    }
+                }
+            });
+        }
+        
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                // Mark as seen
+                localStorage.setItem('botGameWelcomeSeen', 'true');
+            }
         }
 
         async function loadLevels() {
