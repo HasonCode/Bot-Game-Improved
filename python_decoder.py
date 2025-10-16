@@ -209,10 +209,14 @@ class Bot:
 
 
     def reset(self):
+        """Reset bot to initial state and restore all keys/gates in the grid"""
         self.i = self.start[0]
         self.j = self.start[1]
-        self.alive = False
-        self.grid.reset()
+        self.direction = self.grid.start_direction
+        self.alive = True
+        self.win_state = False
+        self.moves = 0
+        self.grid.reset()  # This restores all keys and gates
     
     def __str__(self):
         strong = ""

@@ -109,7 +109,7 @@ LEVEL_4 = {
     ],
     'start_pos': (5,0),
     'start_dir': 3,  # Facing right
-    'par': 12,
+    'par': 4,
     'difficulty': 'Medium'
 }
 
@@ -192,7 +192,7 @@ LEVEL_8 = {
     ],
     'start_pos': (1,1),
     'start_dir': 3,
-    'par': 12,
+    'par': 6,
     'difficulty': 'Hard'
 }
 
