@@ -118,6 +118,9 @@ def execute_code():
         # Get the grid for the specified level
         game_grid = grids.create_grid(level_number)
         
+        # Explicitly reset the grid to ensure all keys and gates are restored
+        game_grid.reset()
+        
         # Create a new bot for this execution
         bot = AnimatedBot(game_grid)
         
