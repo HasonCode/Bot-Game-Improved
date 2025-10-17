@@ -4,6 +4,9 @@ class WinInterruption(Exception):
 class MovesExceeded(Exception):
     pass
 
+class DeathInterruption(Exception):
+    pass
+
 def exec_func(source, globals=None, locals=None):
     try:
         exec(source, globals, locals)
@@ -58,7 +61,7 @@ class Bot:
         keys = [4, 6, 8, 10, 12]
         dir = directions[self.direction]
         if dir == "down" and self.alive and not self.win_state:
-            if self.can_move_back():
+            if self._can_move_back():
                 if self.grid.data[self.i-1][self.j] == 2:
                     self.reset()
                 elif self.grid.data[self.i-1][self.j] in keys:
@@ -67,7 +70,7 @@ class Bot:
                 else:
                     self.i -= 1
         elif dir == "up" and self.alive and not self.win_state:
-            if self.can_move_back():
+            if self._can_move_back():
                 if self.grid.data[self.i+1][self.j] == 2:
                     self.reset()
                 elif self.grid.data[self.i+1][self.j] in keys:
@@ -76,7 +79,7 @@ class Bot:
                 else:
                     self.i += 1
         if dir == "left" and self.alive and not self.win_state:
-            if self.can_move_back():
+            if self._can_move_back():
                 if self.grid.data[self.i][self.j+1] == 2:
                     self.reset()
                 elif self.grid.data[self.i][self.j+1] in keys:
@@ -85,7 +88,7 @@ class Bot:
                 else:
                     self.j+=1
         if dir == "right" and self.alive and not self.win_state:
-            if self.can_move_back():
+            if self._can_move_back():
                 if self.grid.data[self.i][self.j-1] == 2:
                     self.reset()
                 elif self.grid.data[self.i][self.j-1] in keys:
@@ -104,7 +107,7 @@ class Bot:
         keys = [4, 6, 8, 10, 12]
         dir = directions[self.direction]
         if dir == "up" and self.alive and not self.win_state:
-            if self.can_move():
+            if self._can_move():
                 if self.grid.data[self.i-1][self.j] == 2:
                     self.reset()
                 elif self.grid.data[self.i-1][self.j] in keys:
@@ -113,7 +116,7 @@ class Bot:
                 else:
                     self.i -= 1
         elif dir == "down" and self.alive and not self.win_state:
-            if self.can_move():
+            if self._can_move():
                 if self.grid.data[self.i+1][self.j] == 2:
                     self.reset()
                 elif self.grid.data[self.i+1][self.j] in keys:
@@ -122,7 +125,7 @@ class Bot:
                 else:
                     self.i += 1
         if dir == "right" and self.alive and not self.win_state:
-            if self.can_move():
+            if self._can_move():
                 if self.grid.data[self.i][self.j+1] == 2:
                     self.reset()
                 elif self.grid.data[self.i][self.j+1] in keys:
@@ -131,7 +134,7 @@ class Bot:
                 else:
                     self.j+=1
         if dir == "left" and self.alive and not self.win_state:
-            if self.can_move():
+            if self._can_move():
                 if self.grid.data[self.i][self.j-1] == 2:
                     self.reset()
                 elif self.grid.data[self.i][self.j-1] in keys:
@@ -139,7 +142,6 @@ class Bot:
                     self.j -= 1
                 else:
                     self.j -= 1
-        # print(self.__str__())
         self.win_state = self.check_win()
         if (self.win_state):
             raise WinInterruption
@@ -162,7 +164,7 @@ class Bot:
                 if i == key_location[0] and j == key_location[1]:
                     self.grid.data[i][j] = 0
         
-    def can_move_back(self):
+    def _can_move_back(self, additional_blocks=[]):
         # Safety check: ensure bot position is valid
         if not (0 <= self.i < self.grid.rows and 0 <= self.j < self.grid.cols):
             return False
@@ -171,18 +173,26 @@ class Bot:
         dir = directions[self.direction]
         if dir == "down":
             if self.i > 0:
-                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i-1][self.j] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "up":
             if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
-                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i+1][self.j] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "left":
             if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
-                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i][self.j+1] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "right":
             if self.j > 0:
-                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i][self.j-1] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         return False
+    
+    def can_move_back(self):
+        return self._can_move_back([2])
+
     def can_move(self):
+        return self._can_move(self, [2])
+
+
+    def _can_move(self, additional_blocks=[]):
         # Safety check: ensure bot position is valid
         if not (0 <= self.i < self.grid.rows and 0 <= self.j < self.grid.cols):
             return False
@@ -191,16 +201,16 @@ class Bot:
         dir = directions[self.direction]
         if dir == "up":
             if self.i > 0:
-                return self.grid.data[self.i-1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i-1][self.j] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "down":
             if self.i < self.grid.rows - 1:  # Fixed: was self.grid.rows
-                return self.grid.data[self.i+1][self.j] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i+1][self.j] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "right":
             if self.j < self.grid.cols - 1:  # Fixed: was self.grid.cols
-                return self.grid.data[self.i][self.j+1] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i][self.j+1] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         elif dir == "left":
             if self.j > 0:
-                return self.grid.data[self.i][self.j-1] not in [1, 2, 5, 7, 9, 11, 13]
+                return self.grid.data[self.i][self.j-1] not in [1, 5, 7, 9, 11, 13] + additional_blocks
         return False
 
     def check_win(self):
@@ -220,6 +230,7 @@ class Bot:
         self.win_state = False
         self.moves = 0
         self.grid.reset()  # This restores all keys and gates from data_copy
+        raise DeathInterruption("The bot has died")
     
     def __str__(self):
         strong = ""
