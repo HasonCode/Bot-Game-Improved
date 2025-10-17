@@ -278,7 +278,7 @@ LEVEL_13 = {
     ],
     'start_pos': (8,0),
     'start_dir': 3,  # Facing right
-    'par': 16,
+    'par': 6,
     'difficulty': 'Medium'
 }
 

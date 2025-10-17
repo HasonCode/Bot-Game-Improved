@@ -189,7 +189,7 @@ class Bot:
         return self._can_move_back([2])
 
     def can_move(self):
-        return self._can_move(self, [2])
+        return self._can_move([2])
 
 
     def _can_move(self, additional_blocks=[]):
