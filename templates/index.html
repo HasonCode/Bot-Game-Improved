@@ -697,14 +697,19 @@ while True:
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
             
-            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            // Create new element to safely add message (prevents XSS)
+            const div = document.createElement('div');
+            div.className = className;
+            div.textContent = `[${timestamp}] ${message}`;
+            output.appendChild(div);
+            
             output.scrollTop = output.scrollHeight;
         }
 
         function clearOutput() {
             const output = document.getElementById('output');
             if (output) {
-                output.innerHTML = '';
+                output.innerHTML = ''; // Clear all children
             }
         }
 

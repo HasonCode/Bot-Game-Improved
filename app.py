@@ -6,26 +6,50 @@ Production-ready version with security and configuration improvements
 
 import os
 import re
+import logging
 from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
 from dotenv import load_dotenv
 from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption
 import grids
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Load environment variables
 load_dotenv()
+
+# Security: Validate required environment variables in production
+FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+if FLASK_ENV == 'production':
+    if not os.environ.get('SECRET_KEY'):
+        logger.error("❌ SECURITY ERROR: SECRET_KEY not set in production mode!")
+        raise ValueError("SECRET_KEY environment variable must be set in production mode. "
+                        "Generate one with: python generate_secret.py")
 
 app = Flask(__name__)
 
 # Security Configuration
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-secret-key-not-for-production')
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
 
-# CORS Configuration
-CORS(app, origins=os.environ.get('ALLOWED_ORIGINS', '*').split(','))
+# Security Warning in development
+if FLASK_ENV == 'development':
+    logger.warning("⚠️  Running in development mode. Do NOT use this in production without:")
+    logger.warning("   1. Setting SECRET_KEY in .env file")
+    logger.warning("   2. Setting SESSION_COOKIE_SECURE=True in .env")
+    logger.warning("   3. Setting ALLOWED_ORIGINS to your domain")
+    logger.warning("   4. Deploying with HTTPS")
+
+# CORS Configuration - restrict to specific origin
+allowed_origins = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:5000')
+if FLASK_ENV == 'production' and allowed_origins == 'http://localhost:5000':
+    logger.warning("⚠️  CORS is still using localhost. Set ALLOWED_ORIGINS in production!")
+CORS(app, origins=allowed_origins.split(','))
 
 # Default level
 current_level = 1
@@ -72,24 +96,75 @@ class AnimatedBot(Bot):
         self.capture_frame("Turn left")
 
 def is_code_safe(code):
-    """Basic security check for code safety"""
+    """
+    Enhanced security check for code safety using multiple layers:
+    1. AST parsing to detect suspicious patterns
+    2. Regex blacklist for additional protection
+    """
+    import ast
+    
+    # First, try to parse the code to catch syntax errors early
+    try:
+        tree = ast.parse(code)
+    except SyntaxError as e:
+        logger.warning(f"Syntax error in user code: {e}")
+        return False
+    
+    # Dangerous built-in functions and attributes that could cause harm
+    dangerous_names = {
+        'exec', 'eval', '__import__', 'open', 'file', 'input', 'exit', 'quit',
+        'compile', 'globals', 'locals', 'vars', 'getattr', 'setattr', 'delattr',
+        'reload', 'breakpoint', '__builtins__', 'memoryview', 'bytearray'
+    }
+    
+    dangerous_modules = {
+        'os', 'sys', 'subprocess', 'socket', 'urllib', 'requests', 'http',
+        'ftplib', 'smtplib', 'ssl', 'pdb', '__main__', 'importlib',
+        'pickle', 'shelve', 'tempfile', 'shutil', 'glob'
+    }
+    
+    # Walk through AST nodes
+    for node in ast.walk(tree):
+        # Check for import statements
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    module_name = alias.name.split('.')[0]
+                    if module_name in dangerous_modules:
+                        logger.warning(f"Blocked import: {module_name}")
+                        return False
+            elif isinstance(node, ast.ImportFrom):
+                if node.module and node.module.split('.')[0] in dangerous_modules:
+                    logger.warning(f"Blocked import: {node.module}")
+                    return False
+        
+        # Check for dangerous function calls
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in dangerous_names:
+                logger.warning(f"Blocked function call: {node.func.id}")
+                return False
+            # Check for getattr-based imports: getattr(__builtins__, '__import__')
+            if isinstance(node.func, ast.Name) and node.func.id == 'getattr':
+                logger.warning("Blocked: getattr() not allowed")
+                return False
+        
+        # Check for attribute access on builtins
+        if isinstance(node, ast.Attribute):
+            if isinstance(node.value, ast.Name) and node.value.id == '__builtins__':
+                logger.warning("Blocked: Access to __builtins__")
+                return False
+    
+    # Additional regex checks for obfuscated patterns
     dangerous_patterns = [
-        r'import\s+(os|sys|subprocess|socket|urllib|requests|http|ftplib)',
-        r'__import__\s*\(',
-        r'exec\s*\(',
-        r'eval\s*\(',
-        r'compile\s*\(',
-        r'open\s*\(',
-        r'file\s*\(',
-        r'input\s*\(',
-        r'exit\s*\(',
-        r'quit\s*\(',
-        r'reload\s*\('
+        r'__.*__',  # Dunder methods
+        r'\\x[0-9a-fA-F]{2}',  # Hex escapes for obfuscation
     ]
     
     for pattern in dangerous_patterns:
-        if re.search(pattern, code, re.IGNORECASE):
+        if re.search(pattern, code):
+            logger.warning(f"Blocked: Suspicious pattern detected: {pattern}")
             return False
+    
     return True
 
 @app.route('/')
@@ -106,17 +181,32 @@ def execute_code():
             return jsonify({'success': False, 'error': 'No code provided'})
         
         code = data['code']
-        level_number = data.get('level', current_level)
+        level_number = data.get('level', current_level, type=int)
+        
+        # Validate level number
+        if not isinstance(level_number, int) or level_number < 1 or level_number > len(grids.ALL_LEVELS):
+            logger.warning(f"Invalid level number attempted: {level_number}")
+            return jsonify({
+                'success': False, 
+                'error': f'Invalid level number. Must be between 1 and {len(grids.ALL_LEVELS)}'
+            })
         
         # Security check
         if not is_code_safe(code):
             return jsonify({
                 'success': False, 
-                'error': 'Code contains potentially unsafe operations'
+                'error': 'Code contains potentially unsafe operations. Please check your code and try again.'
             })
         
         # Get the grid for the specified level
-        game_grid = grids.create_grid(level_number)
+        try:
+            game_grid = grids.create_grid(level_number)
+        except ValueError as e:
+            logger.warning(f"Invalid level {level_number}: {e}")
+            return jsonify({
+                'success': False, 
+                'error': f'Invalid level number'
+            })
         
         # Explicitly reset the grid to ensure all keys and gates are restored
         game_grid.reset()
@@ -189,21 +279,32 @@ def execute_code():
             })
             
         except Exception as e:
+            # Log the full error for debugging
+            logger.error(f"Code execution error: {type(e).__name__}: {str(e)}", exc_info=True)
+            # Return generic message to user
             return jsonify({
                 'success': False,
-                'error': f'Execution error: {str(e)}'
+                'error': 'An error occurred while executing your code. Please check your syntax and try again.'
             })
             
     except Exception as e:
+        # Log the full error for debugging
+        logger.error(f"Server error processing request: {type(e).__name__}: {str(e)}", exc_info=True)
+        # Return generic message to user
         return jsonify({
             'success': False,
-            'error': f'Server error: {str(e)}'
+            'error': 'A server error occurred. Please try again later.'
         })
 
 @app.route('/grid')
 def get_grid():
     """Get the current grid state for a specific level"""
     level_number = request.args.get('level', current_level, type=int)
+    
+    # Validate level number
+    if not isinstance(level_number, int) or level_number < 1 or level_number > len(grids.ALL_LEVELS):
+        logger.warning(f"Invalid level number attempted: {level_number}")
+        return jsonify({'error': 'Invalid level number'}), 400
     
     try:
         game_grid = grids.create_grid(level_number)
@@ -216,7 +317,8 @@ def get_grid():
             'level_info': level_info
         })
     except ValueError as e:
-        return jsonify({'error': str(e)}), 404
+        logger.warning(f"Error loading level {level_number}: {e}")
+        return jsonify({'error': 'Invalid level'}), 404
 
 @app.route('/levels')
 def get_levels():
@@ -235,6 +337,11 @@ def get_levels():
 @app.route('/level/<int:level_number>')
 def get_level_details(level_number):
     """Get detailed information about a specific level"""
+    # Validate level number
+    if level_number < 1 or level_number > len(grids.ALL_LEVELS):
+        logger.warning(f"Invalid level number attempted: {level_number}")
+        return jsonify({'error': 'Invalid level number'}), 400
+    
     try:
         level_info = grids.get_level_info(level_number)
         game_grid = grids.create_grid(level_number)
@@ -249,7 +356,8 @@ def get_level_details(level_number):
             }
         })
     except ValueError as e:
-        return jsonify({'error': str(e)}), 404
+        logger.warning(f"Error loading level {level_number}: {e}")
+        return jsonify({'error': 'Invalid level'}), 404
 
 
 def init_session_progress():

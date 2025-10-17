@@ -257,7 +257,7 @@ LEVEL_11 = {
     ],
     'start_pos': (11,1),
     'start_dir': 0,
-    'par': 25,
+    'par': 6,
     'difficulty': 'Expert'
 }
 
@@ -300,7 +300,7 @@ LEVEL_14 = {
     ],
     'start_pos': (9,5),
     'start_dir': 0,  # Facing up
-    'par': 20,
+    'par': 4,
     'difficulty': 'Hard'
 }
 
@@ -323,7 +323,7 @@ LEVEL_15 = {
     ],
     'start_pos': (2,10),
     'start_dir': 0,  # Facing up
-    'par': 22,
+    'par': 6,
     'difficulty': 'Hard'
 }
 
