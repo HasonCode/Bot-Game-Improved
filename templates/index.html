@@ -160,6 +160,45 @@ while True:
                     // Move cursor after the inserted tab
                     this.selectionStart = this.selectionEnd = start + tab.length;
                 }
+                
+                // Ctrl+/ for toggling comments
+                if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                    e.preventDefault();
+                    
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    const value = this.value;
+                    
+                    // Get the start of the first line
+                    let lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                    // Get the end of the last line
+                    let lineEnd = value.indexOf('\n', end);
+                    if (lineEnd === -1) lineEnd = value.length;
+                    
+                    // Get the selected lines
+                    const selectedText = value.substring(lineStart, lineEnd);
+                    const lines = selectedText.split('\n');
+                    
+                    // Determine if we should comment or uncomment
+                    const shouldComment = !lines.every(line => line.trim().startsWith('#'));
+                    
+                    // Toggle comments
+                    const toggledLines = lines.map(line => {
+                        if (shouldComment) {
+                            return '# ' + line;
+                        } else {
+                            return line.replace(/^(\s*)#\s/, '$1');
+                        }
+                    });
+                    
+                    // Replace the selected text
+                    const newText = toggledLines.join('\n');
+                    this.value = value.substring(0, lineStart) + newText + value.substring(lineEnd);
+                    
+                    // Restore selection
+                    this.selectionStart = lineStart;
+                    this.selectionEnd = lineStart + newText.length;
+                }
             });
         }
 
