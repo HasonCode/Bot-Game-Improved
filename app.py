@@ -181,7 +181,7 @@ def execute_code():
             return jsonify({'success': False, 'error': 'No code provided'})
         
         code = data['code']
-        level_number = data.get('level', current_level, type=int)
+        level_number = data.get('level', current_level)
         
         # Validate level number
         if not isinstance(level_number, int) or level_number < 1 or level_number > len(grids.ALL_LEVELS):
