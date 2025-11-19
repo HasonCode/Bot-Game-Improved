@@ -87,6 +87,18 @@ class AnimatedBot(Bot):
         direction_name = ['up', 'left', 'down', 'right'][self.direction]
         self.capture_frame(f"Move forward ({direction_name})")
     
+    def move_backward(self):
+        try:
+            super().move_backward()
+        except WinInterruption:
+            # Bot reached the finish line - capture this winning state
+            direction_name = ['up', 'left', 'down', 'right'][self.direction]
+            self.capture_frame(f"Move backward ({direction_name}) - REACHED FINISH!")
+            raise  # Re-raise the exception after capturing the frame
+        
+        direction_name = ['up', 'left', 'down', 'right'][self.direction]
+        self.capture_frame(f"Move backward ({direction_name})")
+    
     def turn_right(self):
         super().turn_right()
         self.capture_frame("Turn right")
