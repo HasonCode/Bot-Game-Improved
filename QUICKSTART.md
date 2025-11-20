@@ -64,7 +64,7 @@ bot.can_move()      # Check if forward is walkable
 
 ```python
 # Simple loop to navigate
-while True:
+for k in range(10):
     if bot.can_move():
         bot.move_forward()
     else:
