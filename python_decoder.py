@@ -1,4 +1,5 @@
-import signal
+import threading
+from queue import Queue
 import time
 
 class TimeoutError(Exception):
@@ -23,16 +24,28 @@ def timeout_handler(signality, frame):
     raise TimeoutError("Code execution exceeded allotted time. Please try a faster solution/remove infinite loops.")
 
 def execute_with_timeout(source, globals = None, locals = None, timeout_seconds=20):
-    handler = signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(timeout_seconds)
+    result_queue = Queue()
+    exception_queue = Queue()
 
-    try:
-        exec(source, globals, locals)
-    except WinInterruption:
-        pass
-    finally:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, handler)
+    def exec_func(source, globals=None, locals=None):
+        try:
+            exec(source, globals, locals)
+        except WinInterruption:
+            return
+        except Exception as e:
+            exception_queue.put(e)
+        
+    thread = threading.Thread(target = exec_func)
+    thread.daemon = True
+    thread.start()
+    thread.join(timeout = timeout_seconds)
+
+    if thread.is_alive():
+        raise TimeoutError(f"Code execution exceeded {timeout_seconds} seconds")
+
+    if not exception_queue.empty():
+        raise exception_queue.get()
+    return result_queue.get() if not result_queue.empty() else None
 
 class Grid:
     """Data denotes tile types: 0 = blank tile, 1 = basic wall tile, 2 = zappy wall tile, 3 = end
