@@ -23,28 +23,39 @@ def exec_func(source, globals=None, locals=None):
 def timeout_handler(signality, frame):
     raise TimeoutError("Code execution exceeded allotted time. Please try a faster solution/remove infinite loops.")
 
-def execute_with_timeout(source, globals = None, locals = None, timeout_seconds=20):
+def execute_with_timeout(source, globals=None, locals=None, timeout_seconds=20):
     result_queue = Queue()
     exception_queue = Queue()
 
-    def exec_func(source, globals=None, locals=None):
+    def code_executor():
+        """Execute code in a separate thread"""
         try:
             exec(source, globals, locals)
+            result_queue.put("success")
         except WinInterruption:
-            return
+            # WinInterruption is expected - bot won
+            result_queue.put("win")
         except Exception as e:
+            # Put exception in queue for re-raising
             exception_queue.put(e)
-        
-    thread = threading.Thread(target = exec_func)
-    thread.daemon = True
+    
+    # Create and start thread with proper target (no args needed - it captures from closure)
+    thread = threading.Thread(target=code_executor)
+    thread.daemon = True  # Dies when main thread dies
     thread.start()
-    thread.join(timeout = timeout_seconds)
-
+    
+    # Wait for thread to complete, with timeout
+    thread.join(timeout=timeout_seconds)
+    
+    # Check if thread is still alive (timed out)
     if thread.is_alive():
         raise TimeoutError(f"Code execution exceeded {timeout_seconds} seconds")
-
+    
+    # Check for exceptions first
     if not exception_queue.empty():
         raise exception_queue.get()
+    
+    # Return result if available (success or win)
     return result_queue.get() if not result_queue.empty() else None
 
 class Grid:
