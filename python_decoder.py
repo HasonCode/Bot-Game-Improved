@@ -1,3 +1,9 @@
+import signal
+import time
+
+class TimeoutError(Exception):
+    pass
+
 class WinInterruption(Exception):
     pass
 
@@ -13,10 +19,25 @@ def exec_func(source, globals=None, locals=None):
     except WinInterruption:
         pass
 
+def timeout_handler(signality, frame):
+    raise TimeoutError("Code execution exceeded allotted time. Please try a faster solution/remove infinite loops.")
+
+def execute_with_timeout(source, globals = None, locals = None, timeout_seconds=20):
+    handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(timeout_seconds)
+
+    try:
+        exec(source, globals, locals)
+    except WinInterruption:
+        pass
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, handler)
+
 class Grid:
     """Data denotes tile types: 0 = blank tile, 1 = basic wall tile, 2 = zappy wall tile, 3 = end
-       4 = Yellow key, 5 = Yellow gate, 6 = Red key, 7 = Red gate, 8 = Blue key, 9 = Blue gate,
-       10 = Green key, 11 = Green gate, 12 = Purple key, 13 = Purple gate 
+        4 = Yellow key, 5 = Yellow gate, 6 = Red key, 7 = Red gate, 8 = Blue key, 9 = Blue gate,
+        10 = Green key, 11 = Green gate, 12 = Purple key, 13 = Purple gate 
     """
     def __init__(self, data, start_pos, start_dir, par):
         self.start_pos = start_pos
@@ -290,7 +311,7 @@ def interpreter(code:str, grid):
         else:
             code_arr.append(line)
     mod_string = "\n".join(code_arr)
-    exec_func(mod_string, globals={"bot":bot})
+    execute_with_timeout(mod_string, globals={"bot":bot})
     if bot.win_state:
         commands = count_bot_commands(mod_string)
         # if commands <= grid.par:

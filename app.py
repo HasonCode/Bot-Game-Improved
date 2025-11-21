@@ -7,11 +7,14 @@ Production-ready version with security and configuration improvements
 import os
 import re
 import logging
+from telnetlib import EL
 from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
 from dotenv import load_dotenv
-from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption
+from python_decoder import Grid, Bot, interpreter, count_bot_commands, WinInterruption, execute_with_timeout
 import grids
+import signal
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -187,6 +190,7 @@ def index():
 @app.route('/execute', methods=['POST'])
 def execute_code():
     """Execute bot code and return results"""
+    timeout_seconds = 30
     try:
         data = request.get_json()
         if not data or 'code' not in data:
@@ -238,7 +242,7 @@ def execute_code():
         # Execute the code
         try:
             # Use exec with the bot in the global namespace
-            exec(clean_code, {'bot': bot})
+            execute_with_timeout(clean_code, {'bot': bot}, timeout_seconds=timeout_seconds)
             
             # Get results
             command_count = count_bot_commands(clean_code)
@@ -289,14 +293,19 @@ def execute_code():
                 'action_log': bot.action_log,
                 'frames': bot.frames  # Return all frames for animation
             })
-            
+        except TimeoutError as e:
+            logger.warning(f"Code execution timeout: {str(e)}")
+            return jsonify({
+                    'success': False,
+                    'error': f'Code execution exceeded the time limit ({timeout_seconds} seconds). Please check for infinite loops.'
+                })
         except Exception as e:
             # Log the full error for debugging
             logger.error(f"Code execution error: {type(e).__name__}: {str(e)}", exc_info=True)
             # Return generic message to user
             return jsonify({
                 'success': False,
-                'error': 'An error occurred while executing your code. Please check your syntax and try again.'
+                'error': f'An error occurred while executing your code. Please check your syntax and try again. Error: {e}'
             })
             
     except Exception as e:
