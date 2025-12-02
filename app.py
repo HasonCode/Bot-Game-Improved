@@ -187,6 +187,11 @@ def index():
     """Serve the main game page"""
     return render_template('index.html')
 
+@app.route('/test')
+def test_page():
+    """Serve the testing page for development and experimentation"""
+    return render_template('test.html')
+
 @app.route('/execute', methods=['POST'])
 def execute_code():
     """Execute bot code and return results"""

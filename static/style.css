@@ -204,6 +204,47 @@ header p {
     border: 1px solid #dee2e6;
 }
 
+/* Editor Tabs */
+.editor-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    top: 2px;
+}
+
+.tab-btn:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.editor-tab-content {
+    display: none;
+}
+
+.editor-tab-content.active {
+    display: block;
+}
+
 #code-input {
     width: 100%;
     height: 200px;
@@ -221,6 +262,31 @@ header p {
     outline: none;
     border-color: #667eea;
     background: white;
+}
+
+/* Blockly Workspace Styling */
+#blockly-workspace {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    background: #fff;
+    min-height: 500px;
+    width: 100%;
+    position: relative;
+}
+
+#blocks-editor-tab {
+    min-height: 500px;
+    width: 100%;
+    position: relative;
+}
+
+/* Ensure Blockly toolbox is visible */
+.blocklyToolboxDiv {
+    background-color: #fff !important;
+}
+
+.blocklyFlyout {
+    background-color: #fff !important;
 }
 
 .controls {

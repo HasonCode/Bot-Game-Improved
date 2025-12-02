@@ -3,36 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Bot Game</title>
+    <title>🧪 Bot Game - Testing Environment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://unpkg.com/blockly@9.2.0/blockly.min.js"></script>
     <link href="https://unpkg.com/blockly@9.2.0/blockly.min.css" rel="stylesheet" />
+    <style>
+        .test-banner {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid #ff4757;
+        }
+        .test-banner a {
+            color: white;
+            text-decoration: underline;
+            margin-left: 10px;
+        }
+        .test-banner a:hover {
+            color: #ffeaa7;
+        }
+    </style>
 </head>
 <body>
-    <!-- Welcome Modal -->
-    <div id="welcome-modal" class="welcome-modal" style="display: none;">
-        <div class="welcome-content">
-            <div class="welcome-header">
-                <h2>🎮 Welcome to Bot Game!</h2>
-                <button id="close-welcome" class="close-btn">&times;</button>
-            </div>
-            <div class="welcome-body">
-                <p><strong>Welcome to the Bot Game portion of the BAPFT!</strong></p>
-                <div class="welcome-instructions">
-                    <p>Here, you will be tasked with solving robot puzzles. Solutions exceeding the par for a given level will receive no more than half credit. Please take screenshots of your solution with either the check or the star and your code, storing them in a document.</p>
-                </div>
-                <div class="welcome-actions">
-                    <button id="start-playing" class="btn btn-primary">Begin Test</button>
-                    <button id="skip-intro" class="btn btn-secondary">Close</button>
-                </div>
-            </div>
-        </div>
+    <!-- Testing Environment Banner -->
+    <div class="test-banner">
+        🧪 TESTING ENVIRONMENT - This is a safe space for experimentation
+        <a href="/">← Back to Main Game</a>
     </div>
 
     <div class="container">
         <header>
-            <h1>🤖 Bot Game</h1>
-            <p>Write Python code to guide your bot to the finish line!</p>
+            <h1>🧪 Bot Game - Testing</h1>
+            <p>Experiment with features here without affecting the main game!</p>
             <div class="progress-summary">
                 <span id="total-stars">⭐ 0</span>
                 <span id="levels-completed">📊 0/15 Levels</span>
@@ -117,6 +126,13 @@ for k in range(10):
         </div>
 
         <div class="instructions">
+            <h3>Testing Environment Notes</h3>
+            <ul>
+                <li><strong>This is a safe testing space</strong> - Changes here don't affect the main game</li>
+                <li><strong>Progress is separate</strong> - Your test progress won't interfere with main game progress</li>
+                <li><strong>Experiment freely</strong> - Try new features, test block coding, debug code</li>
+                <li><strong>Same functionality</strong> - All game features work the same as the main game</li>
+            </ul>
             <h3>How to Play</h3>
             <ul>
                 <li><strong>bot.move_forward()</strong> - Move the bot forward in its current direction</li>
@@ -125,39 +141,31 @@ for k in range(10):
                 <li><strong>bot.turn_right()</strong> - Turn the bot right (clockwise)</li>
                 <li><strong>bot.can_move()</strong> - Check if the bot can move forward (returns True/False)</li>
                 <li><strong>bot.can_move_back()</strong> - Check if the bot can move backward (returns True/False)</li>
-
             </ul>
             <p><strong>Goal:</strong> Get your bot (🤖) to reach the finish line (🟫) using as few commands as possible!</p>
             <p><strong>Legend:</strong> ⬜ Empty, ⬛ Wall, 🟧 Zappy wall, 🟫 Finish line</p>
             <p><strong>Keys & Gates:</strong> 🟡 Yellow key, 🟨 Yellow gate, 🔴 Red key, 🟥 Red gate, 🔵 Blue key, 🟦 Blue gate, 🟢 Green key, 🟩 Green gate, 🟣 Purple key, 🟪 Purple gate</p>
             <p><strong>Bot Directions:</strong> ⬆️ Up, ⬅️ Left, ⬇️ Down, ➡️ Right</p>
             <p><strong>Timeout:</strong>After 30 seconds, there will be a code timeout</p>
-
         </div>
     </div>
 
-
-
-
-
     <script>
-        // Bot Game JavaScript
+        // Bot Game JavaScript - Same as main game
         let isLoading = false;
         let currentLevel = 1;
         let allLevels = [];
-        let shouldInterrupt = false;  // Flag to interrupt execution
-        let workspace = null;  // Blockly workspace
-        let currentEditorMode = 'text';  // 'text' or 'blocks'
+        let shouldInterrupt = false;
+        let workspace = null;
+        let currentEditorMode = 'text';
 
         // Load initial grid
         document.addEventListener('DOMContentLoaded', function() {
             loadLevels();
             setupDelaySlider();
             setupTabSupport();
-            setupWelcomeModal();
             setupEditorTabs();
-            // Don't initialize Blockly immediately - wait until blocks tab is opened
-            // initializeBlockly();
+            initializeBlockly();
         });
 
         function setupDelaySlider() {
@@ -176,41 +184,24 @@ for k in range(10):
             codeInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Tab') {
                     e.preventDefault();
-                    
-                    // Get cursor position
                     const start = this.selectionStart;
                     const end = this.selectionEnd;
-                    
-                    // Insert tab character (4 spaces)
                     const tab = '    ';
                     this.value = this.value.substring(0, start) + tab + this.value.substring(end);
-                    
-                    // Move cursor after the inserted tab
                     this.selectionStart = this.selectionEnd = start + tab.length;
                 }
                 
-                // Ctrl+/ for toggling comments
                 if ((e.ctrlKey || e.metaKey) && e.key === '/') {
                     e.preventDefault();
-                    
                     const start = this.selectionStart;
                     const end = this.selectionEnd;
                     const value = this.value;
-                    
-                    // Get the start of the first line
                     let lineStart = value.lastIndexOf('\n', start - 1) + 1;
-                    // Get the end of the last line
                     let lineEnd = value.indexOf('\n', end);
                     if (lineEnd === -1) lineEnd = value.length;
-                    
-                    // Get the selected lines
                     const selectedText = value.substring(lineStart, lineEnd);
                     const lines = selectedText.split('\n');
-                    
-                    // Determine if we should comment or uncomment
                     const shouldComment = !lines.every(line => line.trim().startsWith('#'));
-                    
-                    // Toggle comments
                     const toggledLines = lines.map(line => {
                         if (shouldComment) {
                             return '# ' + line;
@@ -218,12 +209,8 @@ for k in range(10):
                             return line.replace(/^(\s*)#\s/, '$1');
                         }
                     });
-                    
-                    // Replace the selected text
                     const newText = toggledLines.join('\n');
                     this.value = value.substring(0, lineStart) + newText + value.substring(lineEnd);
-                    
-                    // Restore selection
                     this.selectionStart = lineStart;
                     this.selectionEnd = lineStart + newText.length;
                 }
@@ -237,12 +224,8 @@ for k in range(10):
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetTab = button.getAttribute('data-tab');
-                    
-                    // Update active tab button
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    
-                    // Update active tab content
                     tabContents.forEach(content => content.classList.remove('active'));
                     if (targetTab === 'text') {
                         document.getElementById('text-editor-tab').classList.add('active');
@@ -250,23 +233,10 @@ for k in range(10):
                     } else {
                         document.getElementById('blocks-editor-tab').classList.add('active');
                         currentEditorMode = 'blocks';
-                        // Initialize Blockly if not already initialized
-                        if (!workspace) {
-                            initializeBlockly();
-                        }
-                        // Sync text to blocks when switching to blocks
                         syncTextToBlocks();
-                        // Resize Blockly workspace after tab becomes visible
                         if (workspace) {
                             setTimeout(() => {
                                 Blockly.svgResize(workspace);
-                            }, 200);
-                        } else {
-                            // If workspace still doesn't exist, try initializing again
-                            setTimeout(() => {
-                                if (!workspace) {
-                                    initializeBlockly();
-                                }
                             }, 100);
                         }
                     }
@@ -275,17 +245,10 @@ for k in range(10):
         }
 
         function initializeBlockly() {
-            // Check if Blockly is loaded
-            if (typeof Blockly === 'undefined') {
-                console.error('Blockly library not loaded!');
-                return;
-            }
-
             // Define start block - entry point for the program
             Blockly.Blocks['start'] = {
                 init: function() {
-                    this.appendDummyInput()
-                        .appendField("▶ START");
+                    this.appendDummyInput().appendField("▶ START");
                     this.setNextStatement(true, null);
                     this.setColour(160); // Red/orange color for start
                     this.setTooltip("Start of your program - drag blocks here to begin");
@@ -293,11 +256,9 @@ for k in range(10):
                 }
             };
 
-            // Define custom blocks for bot commands
             Blockly.Blocks['bot_move_forward'] = {
                 init: function() {
-                    this.appendDummyInput()
-                        .appendField("move forward");
+                    this.appendDummyInput().appendField("move forward");
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(230);
@@ -307,8 +268,7 @@ for k in range(10):
 
             Blockly.Blocks['bot_move_backward'] = {
                 init: function() {
-                    this.appendDummyInput()
-                        .appendField("move backward");
+                    this.appendDummyInput().appendField("move backward");
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(230);
@@ -318,8 +278,7 @@ for k in range(10):
 
             Blockly.Blocks['bot_turn_left'] = {
                 init: function() {
-                    this.appendDummyInput()
-                        .appendField("turn left");
+                    this.appendDummyInput().appendField("turn left");
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(230);
@@ -329,8 +288,7 @@ for k in range(10):
 
             Blockly.Blocks['bot_turn_right'] = {
                 init: function() {
-                    this.appendDummyInput()
-                        .appendField("turn right");
+                    this.appendDummyInput().appendField("turn right");
                     this.setPreviousStatement(true, null);
                     this.setNextStatement(true, null);
                     this.setColour(230);
@@ -341,8 +299,7 @@ for k in range(10):
             Blockly.Blocks['bot_can_move'] = {
                 init: function() {
                     this.setOutput(true, 'Boolean');
-                    this.appendDummyInput()
-                        .appendField("can move");
+                    this.appendDummyInput().appendField("can move");
                     this.setColour(120);
                     this.setTooltip("Check if bot can move forward");
                 }
@@ -351,24 +308,35 @@ for k in range(10):
             Blockly.Blocks['bot_can_move_back'] = {
                 init: function() {
                     this.setOutput(true, 'Boolean');
-                    this.appendDummyInput()
-                        .appendField("can move back");
+                    this.appendDummyInput().appendField("can move back");
                     this.setColour(120);
                     this.setTooltip("Check if bot can move backward");
                 }
             };
 
-            // Python code generator (manual implementation)
+            // Define "change variable by" block
+            Blockly.Blocks['variables_change'] = {
+                init: function() {
+                    this.appendValueInput('DELTA')
+                        .setCheck('Number')
+                        .appendField('change')
+                        .appendField(new Blockly.FieldVariable(null), 'VAR')
+                        .appendField('by');
+                    this.setPreviousStatement(true, null);
+                    this.setNextStatement(true, null);
+                    this.setColour('#A65C81');
+                    this.setTooltip('Change a variable by a number');
+                }
+            };
+
             window.BlocklyPython = {
                 workspaceToCode: function(workspace) {
-                    console.log('workspaceToCode - starting code generation');
                     // First, collect all variables used in the workspace
                     const allBlocks = workspace.getAllBlocks(false);
-                    console.log('workspaceToCode - all blocks:', allBlocks.map(b => b.type));
                     const variablesUsed = new Set();
                     
                     allBlocks.forEach(block => {
-                        if (block && (block.type === 'variables_get' || block.type === 'variables_set')) {
+                        if (block && (block.type === 'variables_get' || block.type === 'variables_set' || block.type === 'variables_change')) {
                             try {
                                 // Get variable ID from the field
                                 const varId = block.getFieldValue('VAR');
@@ -414,47 +382,36 @@ for k in range(10):
                     if (startBlock) {
                         // Start from the start block and follow the chain
                         const nextBlock = startBlock.getNextBlock();
-                        console.log('workspaceToCode - start block found, next block:', nextBlock ? nextBlock.type : 'none');
                         if (nextBlock) {
                             code += this.blockToCode(nextBlock, '', new Set());
                         }
                     } else {
                         // Fallback: use top blocks if no start block exists
                         const topBlocks = workspace.getTopBlocks(true);
-                        console.log('workspaceToCode - no start block, using top blocks');
                         const visited = new Set();
                         topBlocks.forEach(block => {
                             code += this.blockToCode(block, '', visited);
                         });
                     }
                     
-                    console.log('workspaceToCode - FINAL generated code:', code);
                     return code;
                 },
                 
                 blockToCode: function(block, indent, visited) {
-                    if (!block) {
-                        console.log('blockToCode - block is null/undefined');
-                        return '';
-                    }
-                    
-                    console.log('blockToCode - processing block type:', block.type, 'id:', block.id, 'indent:', JSON.stringify(indent));
+                    if (!block) return '';
                     
                     // Prevent infinite recursion by tracking visited blocks
                     if (!visited) visited = new Set();
                     const blockId = block.id;
                     if (visited.has(blockId)) {
-                        console.warn('Circular block reference detected:', block.type, 'id:', blockId);
+                        console.warn('Circular block reference detected:', block.type);
                         return '';
                     }
                     visited.add(blockId);
-                    console.log('blockToCode - added to visited, visited size:', visited.size);
                     
                     let code = '';
                     const indentStr = indent || '';
                     const nextIndent = indent + '    ';
-                    
-                    console.log('blockToCode - entering switch for type:', block.type);
                     
                     switch(block.type) {
                         case 'start':
@@ -463,128 +420,94 @@ for k in range(10):
                             break;
                         case 'bot_move_forward':
                             code = indentStr + 'bot.move_forward()\n';
-                            console.log('bot_move_forward - generated code:', code);
                             break;
                         case 'bot_move_backward':
                             code = indentStr + 'bot.move_backward()\n';
-                            console.log('bot_move_backward - generated code:', code);
                             break;
                         case 'bot_turn_left':
                             code = indentStr + 'bot.turn_left()\n';
-                            console.log('bot_turn_left - generated code:', code);
                             break;
                         case 'bot_turn_right':
                             code = indentStr + 'bot.turn_right()\n';
-                            console.log('bot_turn_right - generated code:', code);
                             break;
                         case 'bot_can_move':
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
                             return 'bot.can_move()';
                         case 'bot_can_move_back':
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
                             return 'bot.can_move_back()';
                         case 'controls_repeat_ext':
-                            // Debug: log all inputs on this block
-                            console.log('controls_repeat_ext - block inputs:', block.inputList ? block.inputList.map(i => i.name) : 'no inputList');
-                            
                             // Get the number of times to repeat
                             let times = this.valueToCode(block, 'TIMES', visited);
-                            console.log('controls_repeat_ext - TIMES value:', times, 'type:', typeof times);
-                            if (!times || (typeof times === 'string' && times.trim() === '')) {
+                            if (!times || times.trim() === '') {
                                 times = '10'; // Default to 10 if not provided
                             } else {
-                                times = String(times).trim(); // Ensure it's a string and clean up whitespace
+                                times = times.trim(); // Clean up any whitespace
                             }
-                            // Wrap in int() to ensure it's an integer for Python range()
-                            times = `int(${times})`;
-                            console.log('controls_repeat_ext - Final times:', times);
                             
                             // Get the loop body
                             let branch = this.statementToCode(block, 'DO', indentStr, visited);
-                            console.log('controls_repeat_ext - branch:', branch);
                             if (!branch || !branch.trim()) {
                                 branch = indentStr + '    pass\n';
                             }
                             
                             // Generate the for loop
                             code = indentStr + `for k in range(${times}):\n${branch}`;
-                            console.log('controls_repeat_ext - generated code:', code);
                             
-                            // Handle next block after the loop - must delete from visited first
-                            visited.delete(blockId);
+                            // Handle next block after the loop
                             const nextConn = block.nextConnection;
                             if (nextConn && nextConn.targetBlock()) {
                                 code += this.blockToCode(nextConn.targetBlock(), indent, visited);
                             }
                             
+                            visited.delete(blockId);
                             return code;
                         case 'controls_whileUntil':
                             const until = block.getFieldValue('MODE') === 'UNTIL';
-                            console.log('controls_whileUntil - MODE:', until ? 'UNTIL' : 'WHILE');
-                            
                             // Get condition from BOOL input
                             let condition = this.valueToCode(block, 'BOOL', visited);
-                            console.log('controls_whileUntil - condition from valueToCode:', condition, 'type:', typeof condition);
-                            
-                            // Ensure condition is a string
-                            if (condition !== null && condition !== undefined) {
-                                condition = String(condition).trim();
-                            }
                             
                             // If condition is empty, check if input is connected
-                            if (!condition || condition === '') {
+                            if (!condition || condition.trim() === '') {
                                 const boolInput = block.getInput('BOOL');
                                 if (boolInput && boolInput.connection && boolInput.connection.targetBlock()) {
                                     // Input is connected, try to generate condition manually
                                     const conditionBlock = boolInput.connection.targetBlock();
-                                    console.log('controls_whileUntil - trying manual condition from block:', conditionBlock.type);
-                                    const conditionVisited = new Set(); // Fresh visited set for condition
-                                    condition = this.blockToCode(conditionBlock, '', conditionVisited);
-                                    console.log('controls_whileUntil - manual condition result:', condition);
-                                    // Ensure it's a string and trim
-                                    if (condition !== null && condition !== undefined) {
-                                        condition = String(condition).trim();
-                                    }
+                                    condition = this.blockToCode(conditionBlock, '', visited);
+                                    // Trim any whitespace
+                                    if (condition) condition = condition.trim();
                                 }
                                 
                                 // If still no condition, use False to prevent infinite loop
                                 if (!condition || condition === '') {
                                     condition = 'False';
                                 }
+                            } else {
+                                // Trim condition to remove any extra whitespace
+                                condition = condition.trim();
                             }
-                            console.log('controls_whileUntil - final condition:', condition);
                             
-                            let whileBranch = this.statementToCode(block, 'DO', indentStr, visited);
-                            console.log('controls_whileUntil - branch:', whileBranch);
-                            // Ensure branch is a string
-                            if (!whileBranch || (typeof whileBranch === 'string' && !whileBranch.trim())) {
-                                whileBranch = indentStr + '    pass\n';
-                            }
+                            branch = this.statementToCode(block, 'DO', indentStr, visited);
+                            if (!branch.trim()) branch = indentStr + '    pass\n';
                             
                             if (until) {
                                 // For "repeat until", wrap condition in not()
-                                code = indentStr + `while not (${condition}):\n${whileBranch}`;
+                                code = indentStr + `while not (${condition}):\n${branch}`;
                             } else {
                                 // For "repeat while", use condition directly
-                                code = indentStr + `while ${condition}:\n${whileBranch}`;
+                                code = indentStr + `while ${condition}:\n${branch}`;
                             }
-                            console.log('controls_whileUntil - generated code:', code);
                             
-                            // Handle next block after the while loop - delete from visited first
-                            visited.delete(blockId);
+                            // Handle next block after the while loop
                             const nextConnWhile = block.nextConnection;
                             if (nextConnWhile && nextConnWhile.targetBlock()) {
                                 code += this.blockToCode(nextConnWhile.targetBlock(), indent, visited);
                             }
+                            visited.delete(blockId);
                             return code;
                         case 'controls_if':
                             let ifCode = indentStr + 'if ' + (this.valueToCode(block, 'IF0', visited) || 'True') + ':\n';
                             let doCode = this.statementToCode(block, 'DO0', indentStr, visited);
                             if (!doCode.trim()) doCode = indentStr + '    pass\n';
                             ifCode += doCode;
-                            // Handle else if and else - check if they exist
                             if (block.elseifCount_ !== undefined) {
                                 for (let i = 1; i <= block.elseifCount_; i++) {
                                     const elifCondition = this.valueToCode(block, 'IF' + i, visited) || 'True';
@@ -613,98 +536,57 @@ for k in range(10):
                             const operator = block.getFieldValue('OP');
                             const right = this.valueToCode(block, 'B', visited) || 'True';
                             const ops = {
-                                'EQ': '==',
-                                'NEQ': '!=',
-                                'LT': '<',
-                                'LTE': '<=',
-                                'GT': '>',
-                                'GTE': '>='
+                                'EQ': '==', 'NEQ': '!=', 'LT': '<', 'LTE': '<=', 'GT': '>', 'GTE': '>='
                             };
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
                             return `${left} ${ops[operator] || '=='} ${right}`;
                         case 'logic_operation':
                             const opA = this.valueToCode(block, 'A', visited) || 'True';
                             const logicOp = block.getFieldValue('OP');
                             const opB = this.valueToCode(block, 'B', visited) || 'True';
-                            const operators = {
-                                'AND': 'and',
-                                'OR': 'or'
-                            };
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
+                            const operators = { 'AND': 'and', 'OR': 'or' };
                             return `${opA} ${operators[logicOp] || 'and'} ${opB}`;
                         case 'logic_negate':
                             const bool = this.valueToCode(block, 'BOOL', visited) || 'True';
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
                             return `not (${bool})`;
-                        case 'logic_boolean':
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
-                            return block.getFieldValue('BOOL') === 'TRUE' ? 'True' : 'False';
                         case 'math_number':
-                            // Value blocks should not process next connections
-                            const numValue = block.getFieldValue('NUM');
-                            console.log('math_number - NUM value:', numValue, 'type:', typeof numValue);
-                            visited.delete(blockId);
-                            // Always return as string
-                            return String(numValue !== null && numValue !== undefined ? numValue : '0');
+                            return block.getFieldValue('NUM') || '0';
                         case 'math_arithmetic':
                             const numA = this.valueToCode(block, 'A', visited) || '0';
                             const mathOp = block.getFieldValue('OP');
                             const numB = this.valueToCode(block, 'B', visited) || '0';
                             const mathOps = {
-                                'ADD': '+',
-                                'MINUS': '-',
-                                'MULTIPLY': '*',
-                                'DIVIDE': '/',
-                                'POWER': '**'
+                                'ADD': '+', 'MINUS': '-', 'MULTIPLY': '*', 'DIVIDE': '/', 'POWER': '**'
                             };
-                            // Value blocks should not process next connections
-                            visited.delete(blockId);
                             return `${numA} ${mathOps[mathOp] || '+'} ${numB}`;
                         case 'variables_get':
                             // Get variable value - use workspace to get variable model by ID
                             try {
                                 const varId = block.getFieldValue('VAR');
-                                let result = 'var';
                                 if (varId) {
                                     // Get the workspace from the block
                                     const workspace = block.workspace;
                                     if (workspace) {
                                         const varModel = workspace.getVariableById(varId);
                                         if (varModel && varModel.name) {
-                                            result = varModel.name;
+                                            return varModel.name;
                                         }
                                     }
                                 }
                                 // Fallback: try to get from field
-                                if (result === 'var') {
-                                    const varField = block.getField('VAR');
-                                    if (varField && varField.getText) {
-                                        result = varField.getText();
-                                    }
+                                const varField = block.getField('VAR');
+                                if (varField && varField.getText) {
+                                    return varField.getText();
                                 }
                                 // Last resort fallback
-                                if (result === 'var' && varId) {
-                                    result = varId;
-                                }
-                                // Value blocks should not process next connections
-                                visited.delete(blockId);
-                                return result;
+                                return varId || 'var';
                             } catch (e) {
                                 console.error('Error getting variable name:', e);
-                                // Value blocks should not process next connections
-                                visited.delete(blockId);
                                 return 'var';
                             }
                         case 'variables_set':
                             // Set variable value - use workspace to get variable model by ID
                             try {
-                                console.log('variables_set - starting');
                                 const varId = block.getFieldValue('VAR');
-                                console.log('variables_set - varId:', varId);
                                 let varNameSet = 'var';
                                 if (varId) {
                                     const workspace = block.workspace;
@@ -727,62 +609,85 @@ for k in range(10):
                                         }
                                     }
                                 }
-                                console.log('variables_set - varNameSet:', varNameSet);
                                 const varValue = this.valueToCode(block, 'VALUE', visited) || '0';
-                                console.log('variables_set - varValue:', varValue);
                                 code = indentStr + `${varNameSet} = ${varValue}\n`;
-                                console.log('variables_set - code so far:', code);
-                                // Remove from visited before processing next block to allow proper continuation
-                                visited.delete(blockId);
-                                // Handle next block in chain - this must happen after deleting from visited
+                                // Handle next block in chain
                                 const nextConnVar = block.nextConnection;
-                                console.log('variables_set - nextConnection:', nextConnVar);
-                                console.log('variables_set - nextConnection.targetBlock():', nextConnVar ? nextConnVar.targetBlock() : 'no connection');
                                 if (nextConnVar && nextConnVar.targetBlock()) {
-                                    const nextBlock = nextConnVar.targetBlock();
-                                    console.log('variables_set - processing next block:', nextBlock.type);
-                                    // Ensure next block can be processed even if it was visited before
-                                    code += this.blockToCode(nextBlock, indent, visited);
-                                    console.log('variables_set - code after next block:', code);
-                                } else {
-                                    console.log('variables_set - no next block to process');
+                                    code += this.blockToCode(nextConnVar.targetBlock(), indent, visited);
                                 }
-                                console.log('variables_set - returning code:', code);
+                                visited.delete(blockId);
                                 return code;
                             } catch (e) {
                                 console.error('Error setting variable:', e);
                                 // Even on error, handle next block to continue execution
                                 code = indentStr + 'var = 0\n';
-                                // Remove from visited before processing next block
-                                visited.delete(blockId);
                                 const nextConnVar = block.nextConnection;
                                 if (nextConnVar && nextConnVar.targetBlock()) {
-                                    const nextBlock = nextConnVar.targetBlock();
-                                    code += this.blockToCode(nextBlock, indent, visited);
+                                    code += this.blockToCode(nextConnVar.targetBlock(), indent, visited);
                                 }
+                                visited.delete(blockId);
+                                return code;
+                            }
+                        case 'variables_change':
+                            // Change variable by a value - use workspace to get variable model by ID
+                            try {
+                                const varId = block.getFieldValue('VAR');
+                                let varNameChange = 'var';
+                                if (varId) {
+                                    const workspace = block.workspace;
+                                    if (workspace) {
+                                        const varModelChange = workspace.getVariableById(varId);
+                                        if (varModelChange && varModelChange.name) {
+                                            varNameChange = varModelChange.name;
+                                        } else {
+                                            // Fallback: try to get from field
+                                            const varField = block.getField('VAR');
+                                            if (varField && varField.getText) {
+                                                varNameChange = varField.getText();
+                                            }
+                                        }
+                                    } else {
+                                        // Fallback: try to get from field
+                                        const varField = block.getField('VAR');
+                                        if (varField && varField.getText) {
+                                            varNameChange = varField.getText();
+                                        }
+                                    }
+                                }
+                                const delta = this.valueToCode(block, 'DELTA', visited) || '1';
+                                code = indentStr + `${varNameChange} = ${varNameChange} + ${delta}\n`;
+                                // Handle next block in chain
+                                const nextConnChange = block.nextConnection;
+                                if (nextConnChange && nextConnChange.targetBlock()) {
+                                    code += this.blockToCode(nextConnChange.targetBlock(), indent, visited);
+                                }
+                                visited.delete(blockId);
+                                return code;
+                            } catch (e) {
+                                console.error('Error changing variable:', e);
+                                // Even on error, handle next block to continue execution
+                                code = indentStr + 'var = var + 1\n';
+                                const nextConnChange = block.nextConnection;
+                                if (nextConnChange && nextConnChange.targetBlock()) {
+                                    code += this.blockToCode(nextConnChange.targetBlock(), indent, visited);
+                                }
+                                visited.delete(blockId);
                                 return code;
                             }
                         default:
-                            // For unknown blocks, don't process next connections here
-                            // Let the code after the switch handle it to avoid double processing
-                            code = '';
+                            const nextConnection = block.nextConnection;
+                            if (nextConnection && nextConnection.targetBlock()) {
+                                code = this.blockToCode(nextConnection.targetBlock(), indent, visited);
+                            } else {
+                                code = '';
+                            }
                             break;
                     }
                     
-                    // After processing this block, check for next block in chain
-                    // (unless this block already handled it, like loops, if statements, and variable blocks)
-                    // Only process next connections for statement blocks that didn't handle it themselves
                     const nextConn = block.nextConnection;
                     if (nextConn && nextConn.targetBlock()) {
-                        // Check if this is a value block - value blocks should not process next connections
-                        const isValueBlock = block.type.startsWith('math_') || 
-                                           block.type.startsWith('logic_') || 
-                                           block.type === 'bot_can_move' || 
-                                           block.type === 'bot_can_move_back' ||
-                                           block.type === 'variables_get';
-                        if (!isValueBlock) {
-                            code += this.blockToCode(nextConn.targetBlock(), indent, visited);
-                        }
+                        code += this.blockToCode(nextConn.targetBlock(), indent, visited);
                     }
                     
                     visited.delete(blockId);
@@ -791,97 +696,95 @@ for k in range(10):
                 
                 valueToCode: function(block, name, visited) {
                     const input = block.getInput(name);
-                    console.log('valueToCode - input name:', name, 'input:', input);
-                    if (!input || !input.connection) {
-                        console.log('valueToCode - no input or connection');
-                        return null;
-                    }
+                    if (!input || !input.connection) return null;
                     const targetBlock = input.connection.targetBlock();
-                    console.log('valueToCode - targetBlock:', targetBlock, 'type:', targetBlock ? targetBlock.type : 'none');
                     if (!targetBlock) return null;
-                    // Create a separate visited set for value blocks to prevent interference
-                    // Value blocks should be processed independently
-                    const valueVisited = new Set();
+                    if (!visited) visited = new Set();
                     // For value blocks, we need to get just the value, not a statement
                     // Most value blocks return directly from their case statement
-                    let code = this.blockToCode(targetBlock, '', valueVisited);
-                    console.log('valueToCode - code from blockToCode:', code, 'type:', typeof code);
+                    const code = this.blockToCode(targetBlock, '', visited);
                     // Remove any trailing newlines or whitespace, but preserve the value
-                    if (code === null || code === undefined) return null;
-                    // Ensure code is a string before calling trim
-                    code = String(code);
+                    if (!code) return null;
                     const trimmed = code.trim();
                     // If trimming results in empty string, return null
                     return trimmed === '' ? null : trimmed;
                 },
                 
                 statementToCode: function(block, name, indent, visited) {
-                    console.log('statementToCode - name:', name, 'indent:', JSON.stringify(indent));
                     const input = block.getInput(name);
-                    console.log('statementToCode - input:', input);
                     if (!input || !input.connection) {
-                        console.log('statementToCode - no input or connection, returning pass');
-                        // No statement connected, add pass
                         return (indent || '') + '    pass\n';
                     }
                     const targetBlock = input.connection.targetBlock();
-                    console.log('statementToCode - targetBlock:', targetBlock ? targetBlock.type : 'none');
                     if (!targetBlock) {
-                        console.log('statementToCode - no target block, returning pass');
                         return (indent || '') + '    pass\n';
                     }
-                    // Use a fresh visited set for statement blocks inside loops/conditionals
-                    // This prevents interference with the parent block chain
-                    const statementVisited = new Set();
-                    // Just call blockToCode on the first block - it will handle the chain
-                    let code = this.blockToCode(targetBlock, indent ? indent + '    ' : '    ', statementVisited);
-                    console.log('statementToCode - generated code:', code, 'type:', typeof code);
+                    if (!visited) visited = new Set();
+                    let code = '';
+                    let currentBlock = targetBlock;
+                    let iterationCount = 0;
+                    const maxIterations = 1000; // Safety limit to prevent infinite loops
+                    const processedInChain = new Set(); // Track blocks in this specific chain
                     
-                    // Ensure we return a string
-                    console.log('statementToCode - checking code:', JSON.stringify(code), 'isEmpty:', !code, 'trimEmpty:', typeof code === 'string' && !code.trim());
-                    if (!code || (typeof code === 'string' && !code.trim())) {
-                        console.log('statementToCode - returning pass because code is empty');
-                        return (indent || '') + '    pass\n';
+                    while (currentBlock && iterationCount < maxIterations) {
+                        // Check for circular reference in this specific chain
+                        if (processedInChain.has(currentBlock.id)) {
+                            console.warn('Circular reference detected in statement chain:', currentBlock.type);
+                            break;
+                        }
+                        processedInChain.add(currentBlock.id);
+                        
+                        code += this.blockToCode(currentBlock, indent ? indent + '    ' : '    ', visited);
+                        const nextConnection = currentBlock.nextConnection;
+                        if (nextConnection && nextConnection.targetBlock()) {
+                            currentBlock = nextConnection.targetBlock();
+                            iterationCount++;
+                        } else {
+                            break;
+                        }
                     }
-                    console.log('statementToCode - returning code:', JSON.stringify(String(code)));
-                    return String(code);
+                    
+                    if (iterationCount >= maxIterations) {
+                        console.error('Statement chain too long - stopping to prevent infinite loop');
+                    }
+                    
+                    return code || ((indent || '') + '    pass\n');
                 }
             };
 
-            // Define toolbox using JSON format (Blockly 9.x compatible)
-            // Note: Start block is NOT in toolbox - it's auto-created to prevent conflicts
-            const toolboxJson = {
-                kind: 'categoryToolbox',
-                contents: [
-                    {
-                        kind: 'category',
-                        name: 'Bot Actions',
-                        colour: '#5C81A6',
-                        contents: [
-                            { kind: 'block', type: 'bot_move_forward' },
-                            { kind: 'block', type: 'bot_move_backward' },
-                            { kind: 'block', type: 'bot_turn_left' },
-                            { kind: 'block', type: 'bot_turn_right' }
-                        ]
-                    },
-                    {
-                        kind: 'category',
-                        name: 'Bot Checks',
-                        colour: '#5BA55B',
-                        contents: [
-                            { kind: 'block', type: 'bot_can_move' },
-                            { kind: 'block', type: 'bot_can_move_back' }
-                        ]
-                    },
-                    {
-                        kind: 'category',
-                        name: 'Loops',
-                        colour: '#5C81A6',
-                        contents: [
-                            { kind: 'block', type: 'controls_repeat_ext' },
-                            { kind: 'block', type: 'controls_whileUntil' }
-                        ]
-                    },
+            workspace = Blockly.inject('blockly-workspace', {
+                toolbox: {
+                    kind: 'categoryToolbox',
+                    contents: [
+                        {
+                            kind: 'category',
+                            name: 'Bot Actions',
+                            colour: '#5C81A6',
+                            contents: [
+                                { kind: 'block', type: 'bot_move_forward' },
+                                { kind: 'block', type: 'bot_move_backward' },
+                                { kind: 'block', type: 'bot_turn_left' },
+                                { kind: 'block', type: 'bot_turn_right' }
+                            ]
+                        },
+                        {
+                            kind: 'category',
+                            name: 'Bot Checks',
+                            colour: '#5BA55B',
+                            contents: [
+                                { kind: 'block', type: 'bot_can_move' },
+                                { kind: 'block', type: 'bot_can_move_back' }
+                            ]
+                        },
+                        {
+                            kind: 'category',
+                            name: 'Loops',
+                            colour: '#5C81A6',
+                            contents: [
+                                { kind: 'block', type: 'controls_repeat_ext' },
+                                { kind: 'block', type: 'controls_whileUntil' }
+                            ]
+                        },
                         {
                             kind: 'category',
                             name: 'Conditionals',
@@ -890,110 +793,40 @@ for k in range(10):
                                 { kind: 'block', type: 'controls_if' }
                             ]
                         },
-                    {
-                        kind: 'category',
-                        name: 'Logic',
-                        colour: '#5C81A6',
-                        contents: [
-                            { kind: 'block', type: 'logic_compare' },
-                            { kind: 'block', type: 'logic_operation' },
-                            { kind: 'block', type: 'logic_negate' },
-                            { kind: 'block', type: 'logic_boolean' }
-                        ]
-                    },
-                    {
-                        kind: 'category',
-                        name: 'Math',
-                        colour: '#5C81A6',
-                        contents: [
-                            { kind: 'block', type: 'math_number' },
-                            { kind: 'block', type: 'math_arithmetic' }
-                        ]
-                    },
-                    {
-                        kind: 'category',
-                        name: 'Variables',
-                        colour: '#A65C81',
-                        contents: [
-                            {
-                                kind: 'button',
-                                text: 'Create variable...',
-                                callbackKey: 'CREATE_VARIABLE'
-                            },
-                            { kind: 'block', type: 'variables_set' },
-                            { kind: 'block', type: 'variables_get' }
-                        ]
-                    }
-                ]
-            };
-
-            // Check if workspace element exists
-            const workspaceElement = document.getElementById('blockly-workspace');
-            if (!workspaceElement) {
-                console.error('Blockly workspace element not found!');
-                return;
-            }
-
-            // Initialize workspace
-            try {
-                workspace = Blockly.inject('blockly-workspace', {
-                    toolbox: toolboxJson,
-                    grid: {
-                        spacing: 20,
-                        length: 3,
-                        colour: '#ccc',
-                        snap: true
-                    },
-                    zoom: {
-                        controls: true,
-                        wheel: true,
-                        startScale: 1.0,
-                        maxScale: 3,
-                        minScale: 0.3,
-                        scaleSpeed: 1.2
-                    },
-                    trashcan: true
-                });
-                
-                // Register callback for creating variables
-                workspace.registerButtonCallback('CREATE_VARIABLE', function(button) {
-                    Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
-                });
-                
-                console.log('Blockly workspace initialized successfully');
-                
-                // Add a start block to the workspace automatically if one doesn't exist
-                // Only one start block is allowed
-                setTimeout(() => {
-                    if (workspace) {
-                        const allBlocks = workspace.getAllBlocks(false);
-                        let startBlocks = [];
-                        for (let i = 0; i < allBlocks.length; i++) {
-                            if (allBlocks[i].type === 'start') {
-                                startBlocks.push(allBlocks[i]);
-                            }
+                        {
+                            kind: 'category',
+                            name: 'Logic',
+                            colour: '#5C81A6',
+                            contents: [
+                                { kind: 'block', type: 'logic_compare' },
+                                { kind: 'block', type: 'logic_operation' },
+                                { kind: 'block', type: 'logic_negate' }
+                            ]
+                        },
+                        {
+                            kind: 'category',
+                            name: 'Math',
+                            colour: '#5C81A6',
+                            contents: [
+                                { kind: 'block', type: 'math_number' },
+                                { kind: 'block', type: 'math_arithmetic' }
+                            ]
+                        },
+                        {
+                            kind: 'category',
+                            name: 'Variables',
+                            colour: '#A65C81',
+                            custom: 'VARIABLE',
+                            contents: [
+                                { kind: 'block', type: 'variables_change' }
+                            ]
                         }
-                        
-                        // Remove any extra start blocks (keep only the first one)
-                        if (startBlocks.length > 1) {
-                            for (let i = 1; i < startBlocks.length; i++) {
-                                startBlocks[i].dispose();
-                            }
-                        }
-                        
-                        // Create start block if none exists
-                        if (startBlocks.length === 0) {
-                            const startBlock = workspace.newBlock('start');
-                            startBlock.moveBy(20, 20);
-                            startBlock.initSvg();
-                            startBlock.render();
-                        }
-                        Blockly.svgResize(workspace);
-                    }
-                }, 150);
-            } catch (error) {
-                console.error('Error initializing Blockly workspace:', error);
-            }
+                    ]
+                },
+                grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
+                zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
+                trashcan: true
+            });
 
             // Prevent users from creating additional start blocks
             let processingStartBlock = false; // Flag to prevent infinite loops
@@ -1038,7 +871,36 @@ for k in range(10):
                 }
             });
 
-            // Handle window resize for Blockly workspace
+            // Add a start block to the workspace automatically if one doesn't exist
+            // Only one start block is allowed
+            setTimeout(() => {
+                if (workspace) {
+                    const allBlocks = workspace.getAllBlocks(false);
+                    let startBlocks = [];
+                    for (let i = 0; i < allBlocks.length; i++) {
+                        if (allBlocks[i].type === 'start') {
+                            startBlocks.push(allBlocks[i]);
+                        }
+                    }
+                    
+                    // Remove any extra start blocks (keep only the first one)
+                    if (startBlocks.length > 1) {
+                        for (let i = 1; i < startBlocks.length; i++) {
+                            startBlocks[i].dispose();
+                        }
+                    }
+                    
+                    // Create start block if none exists
+                    if (startBlocks.length === 0) {
+                        const startBlock = workspace.newBlock('start');
+                        startBlock.moveBy(20, 20);
+                        startBlock.initSvg();
+                        startBlock.render();
+                    }
+                    Blockly.svgResize(workspace);
+                }
+            }, 150);
+
             window.addEventListener('resize', function() {
                 if (workspace && currentEditorMode === 'blocks') {
                     Blockly.svgResize(workspace);
@@ -1048,11 +910,8 @@ for k in range(10):
 
         function getCodeFromBlocks() {
             // Generate code from blocks without updating the text editor
-            console.log('getCodeFromBlocks called - workspace:', !!workspace, 'mode:', currentEditorMode);
             if (workspace && currentEditorMode === 'blocks') {
-                const code = BlocklyPython.workspaceToCode(workspace);
-                console.log('getCodeFromBlocks - generated code:', code);
-                return code;
+                return BlocklyPython.workspaceToCode(workspace);
             }
             return null;
         }
@@ -1063,82 +922,11 @@ for k in range(10):
             // When switching to blocks tab, blocks remain as they are
         }
 
-        function setupWelcomeModal() {
-            // Check if user has seen welcome before
-            const hasSeenWelcome = localStorage.getItem('botGameWelcomeSeen');
-            
-            if (!hasSeenWelcome) {
-                // Show welcome modal after a short delay
-                setTimeout(() => {
-                    const modal = document.getElementById('welcome-modal');
-                    if (modal) {
-                        modal.style.display = 'flex';
-                    }
-                }, 500);
-            }
-            
-            // Close button
-            const closeBtn = document.getElementById('close-welcome');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeWelcomeModal);
-            }
-            
-            // Start playing button
-            const startBtn = document.getElementById('start-playing');
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    closeWelcomeModal();
-                    // Focus on code input
-                    const codeInput = document.getElementById('code-input');
-                    if (codeInput) {
-                        codeInput.focus();
-                    }
-                });
-            }
-            
-            // Skip intro button
-            const skipBtn = document.getElementById('skip-intro');
-            if (skipBtn) {
-                skipBtn.addEventListener('click', closeWelcomeModal);
-            }
-            
-            // Close on background click
-            const modal = document.getElementById('welcome-modal');
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        closeWelcomeModal();
-                    }
-                });
-            }
-            
-            // Close on Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    const modal = document.getElementById('welcome-modal');
-                    if (modal && modal.style.display === 'flex') {
-                        closeWelcomeModal();
-                    }
-                }
-            });
-        }
-        
-        function closeWelcomeModal() {
-            const modal = document.getElementById('welcome-modal');
-            if (modal) {
-                modal.style.display = 'none';
-                // Mark as seen
-                localStorage.setItem('botGameWelcomeSeen', 'true');
-            }
-        }
-
         async function loadLevels() {
             try {
                 const response = await fetch('/levels');
                 const data = await response.json();
                 allLevels = data.levels;
-                
-                // Populate level dropdown with completion icons
                 const dropdown = document.getElementById('level-select');
                 dropdown.innerHTML = '';
                 for (const level of allLevels) {
@@ -1147,11 +935,7 @@ for k in range(10):
                     option.textContent = `${level.icon} Level ${level.number}: ${level.name}`;
                     dropdown.appendChild(option);
                 }
-                
-                // Update progress summary
                 await updateProgressSummary();
-                
-                // Load the first level
                 await loadGrid(1);
             } catch (error) {
                 addOutput('Error loading levels: ' + error.message, 'error');
@@ -1162,70 +946,52 @@ for k in range(10):
             if (levelNumber !== null) {
                 currentLevel = levelNumber;
             }
-            
             try {
                 const response = await fetch(`/grid?level=${currentLevel}`);
                 const data = await response.json();
-                
                 if (data.error) {
                     addOutput('Error: ' + data.error, 'error');
                     return;
                 }
-                
-                // Update grid display
                 const gridDisplayElement = document.getElementById('grid-display');
                 if (gridDisplayElement) {
                     gridDisplayElement.textContent = data.grid_state;
                 }
-                
                 const maxCommandsElement = document.getElementById('max-commands');
                 if (maxCommandsElement) {
                     maxCommandsElement.textContent = `Par: ${data.max_commands} commands`;
                 }
-                
-                // Update level info
                 const levelInfo = data.level_info;
                 const levelTitleElement = document.getElementById('level-title');
                 if (levelTitleElement) {
                     levelTitleElement.textContent = `Level ${levelInfo.number}: ${levelInfo.name}`;
                 }
-                
                 const levelDescriptionElement = document.getElementById('level-description');
                 if (levelDescriptionElement) {
                     levelDescriptionElement.textContent = levelInfo.description;
                 }
-                
                 const levelDifficultyElement = document.getElementById('level-difficulty');
                 if (levelDifficultyElement) {
                     levelDifficultyElement.textContent = levelInfo.difficulty;
                     levelDifficultyElement.className = `badge difficulty-${levelInfo.difficulty.toLowerCase()}`;
                 }
-                
                 const levelSizeElement = document.getElementById('level-size');
                 if (levelSizeElement) {
                     levelSizeElement.textContent = levelInfo.size;
                 }
-                
-                // Update dropdown
                 const levelSelectElement = document.getElementById('level-select');
                 if (levelSelectElement) {
                     levelSelectElement.value = currentLevel;
                 }
-                
-                // Update navigation buttons
                 const prevLevelElement = document.getElementById('prev-level');
                 if (prevLevelElement) {
                     prevLevelElement.disabled = currentLevel === 1;
                 }
-                
                 const nextLevelElement = document.getElementById('next-level');
                 if (nextLevelElement) {
                     nextLevelElement.disabled = currentLevel === allLevels.length;
                 }
-                
-                // Update level progress display
                 await updateLevelProgress(currentLevel);
-                
             } catch (error) {
                 addOutput('Error loading grid: ' + error.message, 'error');
             }
@@ -1237,7 +1003,6 @@ for k in range(10):
                 const stats = await response.json();
                 const totalStarsElement = document.getElementById('total-stars');
                 const levelsCompletedElement = document.getElementById('levels-completed');
-                
                 if (totalStarsElement) {
                     totalStarsElement.textContent = `⭐ ${stats.total_stars}`;
                 }
@@ -1255,16 +1020,11 @@ for k in range(10):
                 const data = await response.json();
                 const progress = data.progress;
                 const icon = data.icon;
-                
-                // Update completion icon
                 const completionIcon = document.getElementById('level-completion-icon');
                 if (completionIcon) {
                     completionIcon.textContent = icon;
                 }
-                
-                // Update stats if level has been completed
                 const levelBest = document.getElementById('level-best');
-                
                 if (progress.completed && progress.best_commands) {
                     if (levelBest) {
                         levelBest.style.display = 'inline-block';
@@ -1281,30 +1041,19 @@ for k in range(10):
         }
 
         async function playAnimation(frames, delay) {
-            /**
-             * Play frames sequentially with delay between each frame
-             */
             for (let i = 0; i < frames.length; i++) {
-                // Check for interruption
                 if (shouldInterrupt) {
                     addOutput('⏹️ Execution interrupted!', 'error');
                     throw new Error('Execution interrupted by user');
                 }
-                
                 const frame = frames[i];
-                
-                // Update grid display
                 const gridDisplayElement = document.getElementById('grid-display');
                 if (gridDisplayElement) {
                     gridDisplayElement.textContent = frame.grid_state;
                 }
-                
-                // Show current action
-                if (i > 0) {  // Skip initial state
+                if (i > 0) {
                     addOutput(`${i}. ${frame.action}`);
                 }
-                
-                // Update bot status during animation
                 const botStatusElement = document.getElementById('bot-status');
                 if (botStatusElement) {
                     if (frame.win_state) {
@@ -1318,41 +1067,31 @@ for k in range(10):
                         botStatusElement.className = '';
                     }
                 }
-                
-                // Wait for the delay before showing next frame (but always show the last frame)
                 if (i < frames.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, delay * 1000));
                 } else {
-                    // Ensure final frame is visible for at least a moment
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
-            
-            // Return the final frame for status updates
             return frames[frames.length - 1];
         }
 
         async function executeCode() {
             if (isLoading) return;
-            
             isLoading = true;
-            shouldInterrupt = false;  // Reset interrupt flag
+            shouldInterrupt = false;
             const runButton = document.getElementById('run-code');
             const codeInput = document.getElementById('code-input');
             const delaySlider = document.getElementById('delay-slider');
-            
             if (!codeInput || !delaySlider) {
                 addOutput('Error: Required UI elements not found', 'error');
                 isLoading = false;
                 return;
             }
-            
-            // Get code from current editor mode
             let code;
             if (currentEditorMode === 'blocks') {
                 // Generate code from blocks internally without updating text editor
                 code = getCodeFromBlocks();
-                console.log('executeCode - code from blocks:', code);
                 if (!code) {
                     addOutput('No code generated from blocks', 'error');
                     isLoading = false;
@@ -1367,23 +1106,16 @@ for k in range(10):
                 code = codeInput.value;
             }
             const delay = parseFloat(delaySlider.value);
-            
-            console.log('executeCode - final code to execute:', code);
-            
             if (!code.trim()) {
                 addOutput('Please enter some code to execute', 'error');
                 isLoading = false;
                 return;
             }
-
             if (runButton) {
                 runButton.disabled = true;
                 runButton.textContent = '⏳ Running...';
             }
-            
             clearOutput();
-            
-            // Ensure fresh grid with all keys and gates restored before execution
             try {
                 await loadGrid(currentLevel);
                 addOutput('✨ Grid refreshed - all keys and gates restored');
@@ -1397,60 +1129,42 @@ for k in range(10):
                 }
                 return;
             }
-
             try {
                 const response = await fetch('/execute', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        code: code,
+                        code: code, 
                         level: currentLevel
                     })
                 });
-
                 const result = await response.json();
-
                 if (result.success || result.frames) {
                     let finalFrame = null;
-                    
-                    // Animate through all frames
                     if (result.frames && result.frames.length > 0) {
                         finalFrame = await playAnimation(result.frames, delay);
                     } else {
-                        // Fallback: just show final state
                         document.getElementById('grid-display').textContent = result.grid_state;
                     }
-                    
-                    // Show final results
                     addOutput('─'.repeat(40));
                     addOutput(result.message, result.success ? 'success' : 'error');
                     addOutput(`Total commands used: ${result.command_count}`);
-                    
-                    // Update final status based on result (takes precedence over frame data)
                     const commandCountElement = document.getElementById('command-count');
                     if (commandCountElement) {
                         commandCountElement.textContent = `Commands Used: ${result.command_count}`;
                     }
-                    
-                    // Ensure the final grid state is displayed
                     if (result.grid_state) {
                         const gridDisplayElement = document.getElementById('grid-display');
                         if (gridDisplayElement) {
                             gridDisplayElement.textContent = result.grid_state;
                         }
                     }
-                    
-                    // Record progress
                     const currentLevelInfo = allLevels.find(l => l.number === currentLevel);
                     const par = currentLevelInfo ? currentLevelInfo.par : 999;
                     
                     const progressResponse = await fetch('/progress/save', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             level_number: currentLevel,
                             commands_used: result.command_count,
@@ -1459,30 +1173,20 @@ for k in range(10):
                         })
                     });
                     const levelProgress = await progressResponse.json();
-                    
-                    // Update status - use result data which is authoritative
                     if (result.win_state) {
                         const botStatusElement = document.getElementById('bot-status');
                         if (botStatusElement) {
                             botStatusElement.textContent = 'Bot Status: 🏆 VICTORY!';
                             botStatusElement.className = 'success';
                         }
-                        
-                        // Show completion message based on THIS attempt's performance
-                        // Check if current command count is at or under par
-                        const earnedStarThisAttempt = result.command_count <= par;
-                        const starMessage = earnedStarThisAttempt ? '⭐ Perfect! Completed at or under par!' : '✅ Completed!';
+                        const progressData = levelProgress.progress || levelProgress;
+                        const starMessage = progressData.has_star ? '⭐ Perfect! Completed at or under par!' : '✅ Completed!';
                         addOutput(starMessage, 'success');
-                        
-                        // Update progress displays
                         await updateProgressSummary();
                         await updateLevelProgress(currentLevel);
-                        
-                        // Refresh dropdown to show updated icons
                         const levelsResponse = await fetch('/levels');
                         const levelsData = await levelsResponse.json();
                         allLevels = levelsData.levels;
-                        
                         const dropdown = document.getElementById('level-select');
                         if (dropdown) {
                             const currentValue = dropdown.value;
@@ -1495,7 +1199,6 @@ for k in range(10):
                             }
                             dropdown.value = currentValue;
                         }
-                        
                     } else if (!result.alive) {
                         const botStatusElement = document.getElementById('bot-status');
                         if (botStatusElement) {
@@ -1519,10 +1222,8 @@ for k in range(10):
                         botStatusElement.className = 'error';
                     }
                 }
-
             } catch (error) {
                 if (error.message === 'Execution interrupted by user') {
-                    // Interruption already logged in playAnimation
                     const botStatusElement = document.getElementById('bot-status');
                     if (botStatusElement) {
                         botStatusElement.textContent = 'Bot Status: ⏹️ INTERRUPTED';
@@ -1537,7 +1238,6 @@ for k in range(10):
                     }
                 }
             }
-
             if (runButton) {
                 runButton.disabled = false;
                 runButton.textContent = '🚀 Run Code';
@@ -1546,25 +1246,20 @@ for k in range(10):
         }
 
         async function resetGrid() {
-            // Set interrupt flag to stop any running execution
             shouldInterrupt = true;
-            
             const botStatusElement = document.getElementById('bot-status');
             if (botStatusElement) {
                 botStatusElement.textContent = 'Bot Status: Ready';
                 botStatusElement.className = '';
             }
-            
             const commandCountElement = document.getElementById('command-count');
             if (commandCountElement) {
                 commandCountElement.textContent = 'Commands Used: 0';
                 commandCountElement.className = '';
             }
-            
             clearOutput();
             addOutput('🔄 Resetting grid...');
             addOutput('✨ Restoring all keys and gates to original positions');
-            
             await loadGrid();
             addOutput('✅ Grid reset complete - ready for new attempt');
         }
@@ -1575,27 +1270,22 @@ for k in range(10):
                 console.warn('Output element not found');
                 return;
             }
-            
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
-            
-            // Create new element to safely add message (prevents XSS)
             const div = document.createElement('div');
             div.className = className;
             div.textContent = `[${timestamp}] ${message}`;
             output.appendChild(div);
-            
             output.scrollTop = output.scrollHeight;
         }
 
         function clearOutput() {
             const output = document.getElementById('output');
             if (output) {
-                output.innerHTML = ''; // Clear all children
+                output.innerHTML = '';
             }
         }
 
-        // Event listeners with null checks
         const runCodeElement = document.getElementById('run-code');
         if (runCodeElement) {
             runCodeElement.addEventListener('click', executeCode);
@@ -1606,7 +1296,6 @@ for k in range(10):
             resetGridElement.addEventListener('click', resetGrid);
         }
         
-        // Level navigation
         const prevLevelElement = document.getElementById('prev-level');
         if (prevLevelElement) {
             prevLevelElement.addEventListener('click', async function() {
@@ -1638,7 +1327,6 @@ for k in range(10):
             });
         }
 
-        // Keyboard shortcut
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
