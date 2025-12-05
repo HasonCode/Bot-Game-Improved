@@ -304,24 +304,26 @@ def count_bot_commands(code:str):
     lines = code.split("\n")
     commands = 0
     for i in lines:
-        if "can_move()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("can_move()"):
-                commands+=1
-        elif "turn_right()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("turn_right()"):
-                commands+=1
-        elif "turn_left()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("turn_left()"):
-                commands+=1
-        elif "move_forward()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("move_forward()"):
-                commands+=1
-        elif "move_backward()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("move_backward()"):
-                commands+=1
-        elif "can_move_back()" in i:
-            if i.find("#") == -1 or i.find("#")>i.find("can_move_back()"):
-                commands+=1
+        parts = i.split(";")
+        for part in parts:
+            if "can_move()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("can_move()"):
+                    commands+=1
+            if "turn_right()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("turn_right()"):
+                    commands+=1
+            if "turn_left()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("turn_left()"):
+                    commands+=1
+            if "move_forward()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("move_forward()"):
+                    commands+=1
+            if "move_backward()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("move_backward()"):
+                    commands+=1
+            if "can_move_back()" in part:
+                if part.find("#") == -1 or part.find("#")>part.find("can_move_back()"):
+                    commands+=1
     return commands
 
 def interpreter(code:str, grid):
